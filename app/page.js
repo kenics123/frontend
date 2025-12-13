@@ -231,7 +231,7 @@ const Home = () => {
                 through their actions and achievements.
               </p>
             </div>
-            <div className="md:w-1/2  w-full">
+            <div className="md:w-1/2 w-full">
               <div className="relative h-80 md:h-96 rounded-xl overflow-hidden shadow-xl">
                 <Image
                   src="/images/img2.jpg"

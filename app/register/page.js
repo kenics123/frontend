@@ -448,7 +448,7 @@ const RegisterPage = () => {
                     id="dateOfBirth"
                     value={formData.dateOfBirth}
                     onChange={handleChange}
-                    className={`block w-full pl-12 pr-4 py-3 text-sm border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                    className={`block w-full px-4 py-3 text-sm border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-none ${
                       errors.dateOfBirth
                         ? "border-red-500 bg-red-50 focus:ring-red-500"
                         : "border-gray-300 bg-white hover:border-gray-400 focus:bg-white"
