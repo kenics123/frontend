@@ -11,10 +11,21 @@ import { Heart, Grid, Star, ChevronRight, Search } from "lucide-react";
 // Mock data - replace with actual API call
 const models = [
   {
+    id: "10",
+    name: "Alex Johnson",
+    age: 25,
+    category: "mrs",
+    rating: 4.8,
+    votes: 1243,
+    bio: "Professional model with 5+ years in high fashion and commercial modeling. Specializes in editorial and runway.",
+    imageUrl: pic1,
+    featured: true,
+  },
+  {
     id: "1",
     name: "Alex Johnson",
     age: 25,
-    category: "male",
+    category: "baby",
     rating: 4.8,
     votes: 1243,
     bio: "Professional model with 5+ years in high fashion and commercial modeling. Specializes in editorial and runway.",
@@ -25,7 +36,7 @@ const models = [
     id: "2",
     name: "Marcus Lee",
     age: 28,
-    category: "male",
+    category: "baby",
     rating: 4.5,
     votes: 987,
     bio: "Fitness model and actor with a passion for health and wellness campaigns.",
@@ -36,7 +47,18 @@ const models = [
     id: "3",
     name: "Sarah Williams",
     age: 23,
-    category: "female",
+    category: "miss",
+    rating: 4.9,
+    votes: 1856,
+    bio: "Fashion design student with a unique perspective on style and self-expression.",
+    imageUrl: pic3,
+    featured: true,
+  },
+  {
+    id: "30",
+    name: "Sarah Williams",
+    age: 23,
+    category: "teen",
     rating: 4.9,
     votes: 1856,
     bio: "Fashion design student with a unique perspective on style and self-expression.",
@@ -45,8 +67,8 @@ const models = [
   },
   {
     id: "4",
-    name: "Team Zenith",
-    category: "group",
+    name: "Janny Jude",
+    category: "teen",
     rating: 4.7,
     votes: 2450,
     bio: "Award-winning dance group known for innovative choreography and dynamic performances.",
@@ -57,7 +79,29 @@ const models = [
     id: "5",
     name: "Emily Brown",
     age: 20,
-    category: "female",
+    category: "baby",
+    rating: 4.3,
+    votes: 720,
+    bio: "Emerging talent with a fresh perspective on modern fashion and beauty standards.",
+    imageUrl: pic2,
+    featured: true,
+  },
+  {
+    id: "6",
+    name: "Emily Brown",
+    age: 20,
+    category: "miss",
+    rating: 4.3,
+    votes: 720,
+    bio: "Emerging talent with a fresh perspective on modern fashion and beauty standards.",
+    imageUrl: pic2,
+    featured: true,
+  },
+  {
+    id: "8",
+    name: "Emily Brown",
+    age: 20,
+    category: "mrs",
     rating: 4.3,
     votes: 720,
     bio: "Emerging talent with a fresh perspective on modern fashion and beauty standards.",
@@ -67,27 +111,22 @@ const models = [
 ];
 
 const categories = [
-  { id: "all", label: "All Models" },
-  { id: "female", label: "Female" },
-  { id: "male", label: "Male" },
-  { id: "group", label: "Groups" },
+  { id: "baby", label: "Baby Kenics" },
+  { id: "teen", label: "Teen Kenics" },
+  { id: "miss", label: "Miss Kenics" },
+  { id: "mrs", label: "Mrs Kenics" },
 ];
 
 export default function ModelsPage() {
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedCategory, setSelectedCategory] = useState("miss");
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredModels = models.filter((model) => {
-    const matchesCategory =
-      selectedCategory === "all" || model.category === selectedCategory;
-    const matchesSearch =
-      model.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      model.bio.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    return model.category === selectedCategory;
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white">
+    <div className="min-h-screen bg-linear-to-b from-pink-50 to-white">
       {/* Hero Section */}
       <div className="bg-pink-600 text-white py-12 md:py-20">
         <div className="container mx-auto px-4 text-center">
@@ -156,7 +195,7 @@ export default function ModelsPage() {
                     Featured
                   </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-5">
+                <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent flex flex-col justify-end p-5">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-xl font-bold text-white">
@@ -221,15 +260,6 @@ export default function ModelsPage() {
               Try adjusting your search or filter criteria to find what
               you&apos;re looking for.
             </p>
-            <button
-              onClick={() => {
-                setSelectedCategory("all");
-                setSearchQuery("");
-              }}
-              className="mt-6 px-6 py-2 bg-pink-600 text-white rounded-lg font-medium hover:bg-pink-700 transition-colors"
-            >
-              Show All Models
-            </button>
           </div>
         )}
       </main>

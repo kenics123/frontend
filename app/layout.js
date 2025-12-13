@@ -1,28 +1,21 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Lexend_Deca } from "next/font/google";
 import "./globals.css";
 import SWRProvider from "../components/SwrProvider";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const lexend = Lexend_Deca({
+  variable: "--font-lexend",
   subsets: ["latin"],
 });
 
 export const metadata = {
   title: "Kenics Pageant",
-  description: "Biggest Pageantry show in warri delta state",
+  description: "Best Pageantry show in warri delta state",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${lexend.className} antialiased`}>
         <SWRProvider>{children}</SWRProvider>
       </body>
     </html>

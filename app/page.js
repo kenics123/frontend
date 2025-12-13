@@ -100,7 +100,7 @@ const Home = () => {
                 className="text-gray-700 focus:outline-none"
               >
                 <svg
-                  className="h-6 w-6"
+                  className="h-6 w-6 text-pink-600"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -131,31 +131,31 @@ const Home = () => {
               <div className="flex flex-col space-y-3">
                 <Link
                   href="/"
-                  className="text-gray-700 hover:text-pink-600 font-medium"
+                  className="text-gray-200 hover:text-pink-600 font-medium"
                 >
                   Home
                 </Link>
                 <Link
                   href="/models"
-                  className="text-gray-700 hover:text-pink-600 font-medium"
+                  className="text-gray-200 hover:text-pink-600 font-medium"
                 >
                   Models
                 </Link>
                 <Link
                   href="/voting"
-                  className="text-gray-700 hover:text-pink-600 font-medium"
+                  className="text-gray-200 hover:text-pink-600 font-medium"
                 >
                   Voting
                 </Link>
                 <Link
                   href="/winners"
-                  className="text-gray-700 hover:text-pink-600 font-medium"
+                  className="text-gray-200 hover:text-pink-600 font-medium"
                 >
                   Winners
                 </Link>
                 <Link
                   href="/contact"
-                  className="text-gray-700 hover:text-pink-600 font-medium"
+                  className="text-gray-200 hover:text-pink-600 font-medium"
                 >
                   Contact
                 </Link>
@@ -257,6 +257,11 @@ const Home = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
+              {
+                title: "Baby Kenics",
+                description: "Ages 0-12, children are the future.",
+                icon: "👶",
+              },
               {
                 title: "Miss Kenics",
                 description:

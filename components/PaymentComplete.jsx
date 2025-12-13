@@ -113,7 +113,7 @@ export default function PaymentComplete() {
               Back to Home
             </Link>
             <Link
-              href="/vote"
+              href="/models"
               className="px-6 py-3 border border-pink-200 text-pink-600 font-medium rounded-lg hover:bg-pink-50 transition-colors text-center flex items-center justify-center gap-2"
             >
               View Contestants

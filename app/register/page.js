@@ -579,6 +579,7 @@ const RegisterPage = () => {
                     }`}
                   >
                     <option value="">Select a category</option>
+                    <option value="baby">Baby Kenics (0-12 years)</option>
                     <option value="miss">Miss Kenics (18-25 years)</option>
                     <option value="teen">Teen Kenics (13-17 years)</option>
                     <option value="mrs">Mrs. Kenics (Married women)</option>
