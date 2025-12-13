@@ -24,7 +24,7 @@ const Home = () => {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-pink-50 to-white">
+    <div className="min-h-screen">
       <Head>
         <title>Kenics Pageant - Celebrating Beauty, Grace & Excellence</title>
         <meta
@@ -37,7 +37,9 @@ const Home = () => {
       {/* Navigation */}
       <header
         className={`fixed w-full z-50 transition-all duration-300 ${
-          scrolled ? "bg-white shadow-md py-2" : "bg-transparent py-4"
+          scrolled
+            ? "bg-black/50 backdrop-blur-md shadow-md py-2"
+            : "bg-transparent py-4"
         }`}
       >
         <div className="container mx-auto px-4">
@@ -52,31 +54,31 @@ const Home = () => {
             <nav className="hidden md:flex space-x-8">
               <Link
                 href="/"
-                className="text-gray-700 hover:text-pink-600 font-medium"
+                className="text-gray-200 hover:text-pink-600 font-medium"
               >
                 Home
               </Link>
               <Link
-                href="/about"
-                className="text-gray-700 hover:text-pink-600 font-medium"
+                href="/models"
+                className="text-gray-200 hover:text-pink-600 font-medium"
               >
-                About
+                Models
               </Link>
               <Link
-                href="/categories"
-                className="text-gray-700 hover:text-pink-600 font-medium"
+                href="/voting"
+                className="text-gray-200 hover:text-pink-600 font-medium"
               >
-                Categories
+                Voting
               </Link>
               <Link
                 href="/winners"
-                className="text-gray-700 hover:text-pink-600 font-medium"
+                className="text-gray-200 hover:text-pink-600 font-medium"
               >
                 Winners
               </Link>
               <Link
                 href="/contact"
-                className="text-gray-700 hover:text-pink-600 font-medium"
+                className="text-gray-200 hover:text-pink-600 font-medium"
               >
                 Contact
               </Link>
@@ -134,16 +136,16 @@ const Home = () => {
                   Home
                 </Link>
                 <Link
-                  href="/about"
+                  href="/models"
                   className="text-gray-700 hover:text-pink-600 font-medium"
                 >
-                  About
+                  Models
                 </Link>
                 <Link
-                  href="/categories"
+                  href="/voting"
                   className="text-gray-700 hover:text-pink-600 font-medium"
                 >
-                  Categories
+                  Voting
                 </Link>
                 <Link
                   href="/winners"
@@ -157,9 +159,11 @@ const Home = () => {
                 >
                   Contact
                 </Link>
-                <button className="bg-pink-600 text-white px-6 py-2 rounded-full hover:bg-pink-700 transition duration-300 w-full mt-2">
-                  Apply Now
-                </button>
+                <Link href="/register" className="block w-full">
+                  <button className="bg-pink-600 text-white px-6 py-2 rounded-full hover:bg-pink-700 transition duration-300 w-full mt-2">
+                    Apply Now
+                  </button>
+                </Link>
               </div>
             </div>
           )}
@@ -167,17 +171,26 @@ const Home = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden">
+      <section
+        className="relative pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden"
+        style={{ minHeight: "600px" }}
+      >
         <div className="absolute inset-0 -z-10">
-          <div className="absolute inset-0 bg-black opacity-40"></div>
-          <div className="absolute inset-0 bg-linear-to-t from-black to-transparent"></div>
-          <Image
-            src="/hero-bg.jpg"
-            alt="Kenics Pageant"
-            fill
-            className="object-cover"
-            priority
-          />
+          <div className="relative w-full h-full">
+            <div className="absolute inset-0 bg-pink-100 flex items-center justify-center">
+              <p className="text-pink-800 text-lg">
+                If you see this, the image didn&rsquo;t load
+              </p>
+            </div>
+
+            {/* Try direct public path */}
+            <Image src="/images/img1.jpg" alt="Kenics Pageant" fill priority />
+
+            <div
+              className="absolute inset-0 bg-black/40 bg-linear-to-t from-black/80 to-transparent"
+              style={{ zIndex: 2 }}
+            ></div>
+          </div>
         </div>
         <div className="container mx-auto px-4 text-center text-white">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
@@ -187,9 +200,11 @@ const Home = () => {
             Celebrating Beauty, Grace, and Empowerment
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <button className="bg-pink-600 hover:bg-pink-700 text-white px-8 py-3 rounded-full text-lg font-medium transition duration-300">
-              Apply Now
-            </button>
+            <Link href="/register">
+              <button className="bg-pink-600 hover:bg-pink-700 text-white px-8 py-3 rounded-full text-lg font-medium transition duration-300 w-full sm:w-auto">
+                Apply Now
+              </button>
+            </Link>
             <button className="bg-transparent border-2 border-white hover:bg-white hover:text-pink-600 text-white px-8 py-3 rounded-full text-lg font-medium transition duration-300">
               Learn More
             </button>
@@ -236,7 +251,7 @@ const Home = () => {
             <div className="md:w-1/2">
               <div className="relative h-80 md:h-96 rounded-xl overflow-hidden shadow-xl">
                 <Image
-                  src="/about-image.jpg"
+                  src="/images/img2.jpg"
                   alt="About Kenics Pageant"
                   fill
                   className="object-cover"
@@ -380,9 +395,11 @@ const Home = () => {
             through Kenics Pageant.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <button className="bg-white text-pink-600 hover:bg-gray-100 px-8 py-3 rounded-full text-lg font-medium transition duration-300">
-              Apply Now
-            </button>
+            <Link href="/register">
+              <button className="bg-white text-pink-600 hover:bg-gray-100 px-8 py-3 rounded-full text-lg font-medium transition duration-300 w-full sm:w-auto">
+                Apply Now
+              </button>
+            </Link>
             <button className="bg-transparent border-2 border-white hover:bg-white hover:bg-opacity-10 px-8 py-3 rounded-full text-lg font-medium transition duration-300">
               Contact Us
             </button>
@@ -413,10 +430,10 @@ const Home = () => {
                 </li>
                 <li>
                   <Link
-                    href="/categories"
+                    href="/voting"
                     className="text-gray-400 hover:text-white transition"
                   >
-                    Categories
+                    Voting
                   </Link>
                 </li>
                 <li>

@@ -1,22 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useRegister } from "../../functions/registration";
+import { Toaster, toast } from "sonner";
 
 const RegisterPage = () => {
-  const router = useRouter();
+  const { trigger, isMutating } = useRegister();
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
     phone: "",
     dateOfBirth: "",
-    address: "",
-    city: "",
-    state: "",
-    zipCode: "",
-    country: "",
     height: "",
     weight: "",
     category: "",
@@ -24,9 +21,10 @@ const RegisterPage = () => {
     experience: "",
     achievements: "",
     socialMedia: {
-      instagram: "",
       facebook: "",
+      instagram: "",
       twitter: "",
+      tiktok: "",
     },
     emergencyContact: {
       name: "",
@@ -44,13 +42,30 @@ const RegisterPage = () => {
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
+    // Clear error for the field being updated
+    if (errors[name]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    } else if (name.includes(".") && errors[name.split(".")[0]]) {
+      // Handle nested errors
+      const [parent] = name.split(".");
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[`${parent}.${name.split(".")[1]}`];
+        return newErrors;
+      });
+    }
+
     if (name.includes(".")) {
       const [parent, child] = name.split(".");
       setFormData((prev) => ({
         ...prev,
         [parent]: {
           ...prev[parent],
-          [child]: value,
+          [child]: type === "checkbox" ? checked : value,
         },
       }));
     } else {
@@ -80,16 +95,44 @@ const RegisterPage = () => {
   const validateForm = () => {
     const newErrors = {};
 
+    // Basic Info
     if (!formData.firstName.trim())
       newErrors.firstName = "First name is required";
     if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
-    if (!formData.email.includes("@"))
-      newErrors.email = "Valid email is required";
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
     if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
     if (!formData.dateOfBirth)
       newErrors.dateOfBirth = "Date of birth is required";
-    if (!formData.category) newErrors.category = "Please select a category";
+
+    // Physical Attributes
+    if (!formData.height) newErrors.height = "Height is required";
+    if (!formData.weight) newErrors.weight = "Weight is required";
+    if (!formData.category) newErrors.category = "Category is required";
+
+    // Bio and Experience
+    if (!formData.bio.trim()) newErrors.bio = "Bio is required";
+    if (!formData.experience.trim())
+      newErrors.experience = "Experience is required";
+
+    // Emergency Contact
+    if (!formData.emergencyContact.name.trim())
+      newErrors["emergencyContact.name"] = "Emergency contact name is required";
+    if (!formData.emergencyContact.relationship.trim())
+      newErrors["emergencyContact.relationship"] = "Relationship is required";
+    if (!formData.emergencyContact.phone.trim())
+      newErrors["emergencyContact.phone"] =
+        "Emergency contact phone is required";
+
+    // Files
     if (!profilePhoto) newErrors.profilePhoto = "Profile photo is required";
+    if (additionalPhotos.length === 0)
+      newErrors.additionalPhotos = "At least one additional photo is required";
+
+    // Terms
     if (!formData.termsAccepted)
       newErrors.termsAccepted = "You must accept the terms and conditions";
 
@@ -99,6 +142,13 @@ const RegisterPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    setIsSubmitting(true);
 
     if (!validateForm()) {
       return;
@@ -125,29 +175,16 @@ const RegisterPage = () => {
         formDataToSend.append(`additionalPhotos`, file);
       });
 
-      // In a real application, you would send this to your backend
-      // const response = await fetch('/api/register', {
-      //   method: 'POST',
-      //   body: formDataToSend,
-      // });
-      // const data = await response.json();
-      // if (response.ok) {
-      //   router.push('/success');
-      // }
+      //send to backend
+      console.log(formData);
+      // const response = await trigger(formDataToSend);
 
-      // For demo purposes, we'll just log the form data
-      console.log("Form submitted:", {
-        ...formData,
-        profilePhoto: profilePhoto ? profilePhoto.name : null,
-        additionalPhotos: additionalPhotos.map((photo) => photo.name),
-      });
+      // console.log(response);
 
-      // Show success message (in a real app, you might redirect to a success page)
-      alert("Registration submitted successfully!");
-      // router.push('/success');
+      // window.open(paylinkUrl, "_blank");
     } catch (error) {
       console.error("Error submitting form:", error);
-      alert(
+      toast.error(
         "There was an error submitting your application. Please try again."
       );
     } finally {
@@ -157,6 +194,7 @@ const RegisterPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <Toaster />
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
@@ -274,8 +312,13 @@ const RegisterPage = () => {
                     id="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                    className={`shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border-gray-300 rounded-md ${
+                      errors.phone ? "border-red-500" : ""
+                    }`}
                   />
+                  {errors.phone && (
+                    <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+                  )}
                 </div>
               </div>
 
@@ -293,8 +336,15 @@ const RegisterPage = () => {
                     id="dateOfBirth"
                     value={formData.dateOfBirth}
                     onChange={handleChange}
-                    className="shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                    className={`shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border-gray-300 rounded-md ${
+                      errors.dateOfBirth ? "border-red-500" : ""
+                    }`}
                   />
+                  {errors.dateOfBirth && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.dateOfBirth}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -312,8 +362,13 @@ const RegisterPage = () => {
                     id="height"
                     value={formData.height}
                     onChange={handleChange}
-                    className="shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                    className={`shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border-gray-300 rounded-md ${
+                      errors.height ? "border-red-500" : ""
+                    }`}
                   />
+                  {errors.height && (
+                    <p className="mt-1 text-sm text-red-600">{errors.height}</p>
+                  )}
                 </div>
               </div>
 
@@ -331,8 +386,13 @@ const RegisterPage = () => {
                     id="weight"
                     value={formData.weight}
                     onChange={handleChange}
-                    className="shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                    className={`shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border-gray-300 rounded-md ${
+                      errors.weight ? "border-red-500" : ""
+                    }`}
                   />
+                  {errors.weight && (
+                    <p className="mt-1 text-sm text-red-600">{errors.weight}</p>
+                  )}
                 </div>
               </div>
 
@@ -349,13 +409,20 @@ const RegisterPage = () => {
                     name="category"
                     value={formData.category}
                     onChange={handleChange}
-                    className="shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                    className={`shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border-gray-300 rounded-md ${
+                      errors.category ? "border-red-500" : ""
+                    }`}
                   >
                     <option value="">Select a category</option>
                     <option value="miss">Miss Kenics (18-25 years)</option>
                     <option value="teen">Teen Kenics (13-17 years)</option>
                     <option value="mrs">Mrs. Kenics (Married women)</option>
                   </select>
+                  {errors.category && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.category}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -443,9 +510,15 @@ const RegisterPage = () => {
 
               <div className="sm:col-span-6">
                 <label className="block text-sm font-medium text-gray-700">
-                  Additional Photos (Optional)
+                  Additional Photos
                 </label>
-                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                <div
+                  className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md ${
+                    errors.additionalPhotos
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                >
                   <div className="space-y-1 text-center">
                     {additionalPhotos.length > 0 ? (
                       <div className="space-y-2">
@@ -536,128 +609,14 @@ const RegisterPage = () => {
                         <p className="text-xs text-gray-500">
                           PNG, JPG, GIF up to 10MB each (max 5 photos)
                         </p>
+                        {errors.additionalPhotos && (
+                          <p className="mt-2 text-sm text-red-600">
+                            {errors.additionalPhotos}
+                          </p>
+                        )}
                       </>
                     )}
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Address Information */}
-          <div className="pt-8">
-            <div>
-              <h2 className="text-xl font-medium text-gray-900">
-                Address Information
-              </h2>
-              <p className="mt-1 text-sm text-gray-500">
-                Your current address details.
-              </p>
-            </div>
-
-            <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-              <div className="sm:col-span-6">
-                <label
-                  htmlFor="address"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Street address
-                </label>
-                <div className="mt-1">
-                  <input
-                    type="text"
-                    name="address"
-                    id="address"
-                    value={formData.address}
-                    onChange={handleChange}
-                    className="shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                  />
-                </div>
-              </div>
-
-              <div className="sm:col-span-2">
-                <label
-                  htmlFor="city"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  City
-                </label>
-                <div className="mt-1">
-                  <input
-                    type="text"
-                    name="city"
-                    id="city"
-                    value={formData.city}
-                    onChange={handleChange}
-                    className="shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                  />
-                </div>
-              </div>
-
-              <div className="sm:col-span-2">
-                <label
-                  htmlFor="state"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  State / Province
-                </label>
-                <div className="mt-1">
-                  <input
-                    type="text"
-                    name="state"
-                    id="state"
-                    value={formData.state}
-                    onChange={handleChange}
-                    className="shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                  />
-                </div>
-              </div>
-
-              <div className="sm:col-span-2">
-                <label
-                  htmlFor="zipCode"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  ZIP / Postal code
-                </label>
-                <div className="mt-1">
-                  <input
-                    type="text"
-                    name="zipCode"
-                    id="zipCode"
-                    value={formData.zipCode}
-                    onChange={handleChange}
-                    className="shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                  />
-                </div>
-              </div>
-
-              <div className="sm:col-span-3">
-                <label
-                  htmlFor="country"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Country
-                </label>
-                <div className="mt-1">
-                  <select
-                    id="country"
-                    name="country"
-                    value={formData.country}
-                    onChange={handleChange}
-                    className="shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                  >
-                    <option value="">Select a country</option>
-                    <option value="US">United States</option>
-                    <option value="UK">United Kingdom</option>
-                    <option value="CA">Canada</option>
-                    <option value="AU">Australia</option>
-                    <option value="NG">Nigeria</option>
-                    <option value="ZA">South Africa</option>
-                    <option value="KE">Kenya</option>
-                    <option value="GH">Ghana</option>
-                    <option value="OTHER">Other</option>
-                  </select>
                 </div>
               </div>
             </div>
@@ -690,11 +649,16 @@ const RegisterPage = () => {
                     maxLength={300}
                     value={formData.bio}
                     onChange={handleChange}
-                    className="shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border border-gray-300 rounded-md"
+                    className={`shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border ${
+                      errors.bio ? "border-red-500" : "border-gray-300"
+                    } rounded-md`}
                   />
                   <p className="mt-1 text-xs text-gray-500">
                     {formData.bio.length}/300 characters
                   </p>
+                  {errors.bio && (
+                    <p className="mt-1 text-sm text-red-600">{errors.bio}</p>
+                  )}
                 </div>
               </div>
 
@@ -712,9 +676,16 @@ const RegisterPage = () => {
                     rows={3}
                     value={formData.experience}
                     onChange={handleChange}
-                    className="shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border border-gray-300 rounded-md"
+                    className={`shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border ${
+                      errors.experience ? "border-red-500" : "border-gray-300"
+                    } rounded-md`}
                     placeholder="List any previous pageant experience, titles won, or relevant experience"
                   />
+                  {errors.experience && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.experience}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -782,15 +753,41 @@ const RegisterPage = () => {
                 >
                   Facebook
                 </label>
-                <div className="mt-1">
+                <div className="mt-1 flex rounded-md shadow-sm">
+                  <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
+                    @
+                  </span>
                   <input
                     type="text"
                     name="socialMedia.facebook"
                     id="socialMedia.facebook"
                     value={formData.socialMedia.facebook}
                     onChange={handleChange}
-                    className="shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                    placeholder="facebook.com/username"
+                    className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-pink-500 focus:border-pink-500 sm:text-sm border-gray-300"
+                    placeholder="username"
+                  />
+                </div>
+              </div>
+
+              <div className="sm:col-span-2">
+                <label
+                  htmlFor="socialMedia.tiktok"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Tiktok
+                </label>
+                <div className="mt-1 flex rounded-md shadow-sm">
+                  <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
+                    @
+                  </span>
+                  <input
+                    type="text"
+                    name="socialMedia.tiktok"
+                    id="socialMedia.tiktok"
+                    value={formData.socialMedia.tiktok}
+                    onChange={handleChange}
+                    className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-pink-500 focus:border-pink-500 sm:text-sm border-gray-300"
+                    placeholder="username"
                   />
                 </div>
               </div>
@@ -846,8 +843,17 @@ const RegisterPage = () => {
                     id="emergencyContact.name"
                     value={formData.emergencyContact.name}
                     onChange={handleChange}
-                    className="shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                    className={`shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border ${
+                      errors["emergencyContact.name"]
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    } rounded-md`}
                   />
+                  {errors["emergencyContact.name"] && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors["emergencyContact.name"]}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -865,9 +871,18 @@ const RegisterPage = () => {
                     id="emergencyContact.relationship"
                     value={formData.emergencyContact.relationship}
                     onChange={handleChange}
-                    className="shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                    className={`shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border ${
+                      errors["emergencyContact.relationship"]
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    } rounded-md`}
                     placeholder="e.g., Parent, Sibling, Spouse"
                   />
+                  {errors["emergencyContact.relationship"] && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors["emergencyContact.relationship"]}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -885,8 +900,17 @@ const RegisterPage = () => {
                     id="emergencyContact.phone"
                     value={formData.emergencyContact.phone}
                     onChange={handleChange}
-                    className="shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                    className={`shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border ${
+                      errors["emergencyContact.phone"]
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    } rounded-md`}
                   />
+                  {errors["emergencyContact.phone"] && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors["emergencyContact.phone"]}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -950,9 +974,11 @@ const RegisterPage = () => {
               </button>
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isMutating}
                 className={`ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 ${
-                  isSubmitting ? "opacity-70 cursor-not-allowed" : ""
+                  isSubmitting || isMutating
+                    ? "opacity-70 cursor-not-allowed"
+                    : ""
                 }`}
               >
                 {isSubmitting ? "Submitting..." : "Submit Application"}
