@@ -5,21 +5,23 @@ export const globalFetcher = async (path, options = {}) => {
   const headers = {
     ...options.header,
   };
-  if (isFormData) {
-    headers["Content-Type"] = "multipart/form-data";
+  if (!isFormData) {
+    headers["Content-Type"] = "application/json";
   }
+
   const res = await fetch(url, {
     ...options,
     headers,
   });
 
+  const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     throw {
-      status: res.status,
-      message: error.message || "Request failed",
-      data: error,
+      status: data.statusCode,
+      message: data.message || "Request failed",
+      error: data.error,
     };
   }
 
-  return res.json();
+  return data;
 };

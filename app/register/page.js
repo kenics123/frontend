@@ -164,28 +164,35 @@ const RegisterPage = () => {
       Object.entries(formData).forEach(([key, value]) => {
         if (typeof value === "object" && value !== null) {
           formDataToSend.append(key, JSON.stringify(value));
-        } else {
+        } else if (value !== undefined && value !== null) {
           formDataToSend.append(key, value);
         }
       });
 
-      // Append files
-      formDataToSend.append("profilePhoto", profilePhoto);
-      additionalPhotos.forEach((file, index) => {
-        formDataToSend.append(`additionalPhotos`, file);
-      });
+      // Append profile photo if it exists
+      if (profilePhoto) {
+        formDataToSend.append("files", profilePhoto);
+      }
 
-      //send to backend
-      console.log(formData);
-      // const response = await trigger(formDataToSend);
+      // Append additional photos if they exist
+      if (additionalPhotos && additionalPhotos.length > 0) {
+        additionalPhotos.forEach((file) => {
+          if (file) {
+            formDataToSend.append("files", file);
+          }
+        });
+      }
 
-      // console.log(response);
+      // Send to backend
+      const response = await trigger(formDataToSend);
 
-      // window.open(paylinkUrl, "_blank");
+      if (response?.flutterwavePaymentUrl) {
+        window.location.href = response.flutterwavePaymentUrl.data.link;
+      }
     } catch (error) {
-      console.error("Error submitting form:", error);
       toast.error(
-        "There was an error submitting your application. Please try again."
+        error.message ||
+          "There was an error submitting your application. Please try again."
       );
     } finally {
       setIsSubmitting(false);
@@ -207,7 +214,7 @@ const RegisterPage = () => {
 
         <form
           onSubmit={handleSubmit}
-          className="space-y-8 divide-y divide-gray-200 bg-white p-6 rounded-lg shadow-md"
+          className="space-y-8 divide-y divide-gray-200 bg-white p-8 rounded-xl shadow-lg"
         >
           {/* Personal Information */}
           <div className="space-y-6">
@@ -224,7 +231,7 @@ const RegisterPage = () => {
               <div className="sm:col-span-3">
                 <label
                   htmlFor="firstName"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
                 >
                   First name <span className="text-red-500">*</span>
                 </label>
@@ -235,12 +242,26 @@ const RegisterPage = () => {
                     id="firstName"
                     value={formData.firstName}
                     onChange={handleChange}
-                    className={`shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border-gray-300 rounded-md ${
-                      errors.firstName ? "border-red-500" : ""
+                    className={`block w-full px-4 py-3 text-sm border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                      errors.firstName
+                        ? "border-red-500 bg-red-50 focus:ring-red-500"
+                        : "border-gray-300 bg-white hover:border-gray-400 focus:bg-white"
                     }`}
+                    placeholder="Enter your first name"
                   />
                   {errors.firstName && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p className="mt-2 text-sm text-red-600 flex items-center">
+                      <svg
+                        className="w-4 h-4 mr-1"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
                       {errors.firstName}
                     </p>
                   )}
@@ -250,7 +271,7 @@ const RegisterPage = () => {
               <div className="sm:col-span-3">
                 <label
                   htmlFor="lastName"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
                 >
                   Last name <span className="text-red-500">*</span>
                 </label>
@@ -261,12 +282,26 @@ const RegisterPage = () => {
                     id="lastName"
                     value={formData.lastName}
                     onChange={handleChange}
-                    className={`shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border-gray-300 rounded-md ${
-                      errors.lastName ? "border-red-500" : ""
+                    className={`block w-full px-4 py-3 text-sm border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                      errors.lastName
+                        ? "border-red-500 bg-red-50 focus:ring-red-500"
+                        : "border-gray-300 bg-white hover:border-gray-400 focus:bg-white"
                     }`}
+                    placeholder="Enter your last name"
                   />
                   {errors.lastName && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p className="mt-2 text-sm text-red-600 flex items-center">
+                      <svg
+                        className="w-4 h-4 mr-1"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
                       {errors.lastName}
                     </p>
                   )}
@@ -276,11 +311,26 @@ const RegisterPage = () => {
               <div className="sm:col-span-4">
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
                 >
                   Email address <span className="text-red-500">*</span>
                 </label>
-                <div className="mt-1">
+                <div className="mt-1 relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <svg
+                      className="h-5 w-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
+                      />
+                    </svg>
+                  </div>
                   <input
                     id="email"
                     name="email"
@@ -288,12 +338,28 @@ const RegisterPage = () => {
                     autoComplete="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className={`shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border-gray-300 rounded-md ${
-                      errors.email ? "border-red-500" : ""
+                    className={`block w-full pl-12 pr-4 py-3 text-sm border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                      errors.email
+                        ? "border-red-500 bg-red-50 focus:ring-red-500"
+                        : "border-gray-300 bg-white hover:border-gray-400 focus:bg-white"
                     }`}
+                    placeholder="your.email@example.com"
                   />
                   {errors.email && (
-                    <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                    <p className="mt-2 text-sm text-red-600 flex items-center">
+                      <svg
+                        className="w-4 h-4 mr-1"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      {errors.email}
+                    </p>
                   )}
                 </div>
               </div>
@@ -301,23 +367,54 @@ const RegisterPage = () => {
               <div className="sm:col-span-2">
                 <label
                   htmlFor="phone"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
                 >
                   Phone <span className="text-red-500">*</span>
                 </label>
-                <div className="mt-1">
+                <div className="mt-1 relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <svg
+                      className="h-5 w-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                      />
+                    </svg>
+                  </div>
                   <input
                     type="text"
                     name="phone"
                     id="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className={`shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border-gray-300 rounded-md ${
-                      errors.phone ? "border-red-500" : ""
+                    className={`block w-full pl-12 pr-4 py-3 text-sm border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                      errors.phone
+                        ? "border-red-500 bg-red-50 focus:ring-red-500"
+                        : "border-gray-300 bg-white hover:border-gray-400 focus:bg-white"
                     }`}
+                    placeholder="+1234567890"
                   />
                   {errors.phone && (
-                    <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+                    <p className="mt-2 text-sm text-red-600 flex items-center">
+                      <svg
+                        className="w-4 h-4 mr-1"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      {errors.phone}
+                    </p>
                   )}
                 </div>
               </div>
@@ -325,23 +422,51 @@ const RegisterPage = () => {
               <div className="sm:col-span-2">
                 <label
                   htmlFor="dateOfBirth"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
                 >
                   Date of Birth <span className="text-red-500">*</span>
                 </label>
-                <div className="mt-1">
+                <div className="mt-1 relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <svg
+                      className="h-5 w-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
                   <input
                     type="date"
                     name="dateOfBirth"
                     id="dateOfBirth"
                     value={formData.dateOfBirth}
                     onChange={handleChange}
-                    className={`shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border-gray-300 rounded-md ${
-                      errors.dateOfBirth ? "border-red-500" : ""
+                    className={`block w-full pl-12 pr-4 py-3 text-sm border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                      errors.dateOfBirth
+                        ? "border-red-500 bg-red-50 focus:ring-red-500"
+                        : "border-gray-300 bg-white hover:border-gray-400 focus:bg-white"
                     }`}
                   />
                   {errors.dateOfBirth && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p className="mt-2 text-sm text-red-600 flex items-center">
+                      <svg
+                        className="w-4 h-4 mr-1"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
                       {errors.dateOfBirth}
                     </p>
                   )}
@@ -351,23 +476,42 @@ const RegisterPage = () => {
               <div className="sm:col-span-2">
                 <label
                   htmlFor="height"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
                 >
-                  Height (cm)
+                  Height (cm) <span className="text-red-500">*</span>
                 </label>
-                <div className="mt-1">
+                <div className="mt-1 relative">
                   <input
                     type="number"
                     name="height"
                     id="height"
                     value={formData.height}
                     onChange={handleChange}
-                    className={`shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border-gray-300 rounded-md ${
-                      errors.height ? "border-red-500" : ""
+                    className={`block w-full px-4 py-3 text-sm border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                      errors.height
+                        ? "border-red-500 bg-red-50 focus:ring-red-500"
+                        : "border-gray-300 bg-white hover:border-gray-400 focus:bg-white"
                     }`}
+                    placeholder="170"
                   />
+                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                    <span className="text-gray-400 text-sm">cm</span>
+                  </div>
                   {errors.height && (
-                    <p className="mt-1 text-sm text-red-600">{errors.height}</p>
+                    <p className="mt-2 text-sm text-red-600 flex items-center">
+                      <svg
+                        className="w-4 h-4 mr-1"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      {errors.height}
+                    </p>
                   )}
                 </div>
               </div>
@@ -375,23 +519,42 @@ const RegisterPage = () => {
               <div className="sm:col-span-2">
                 <label
                   htmlFor="weight"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
                 >
-                  Weight (kg)
+                  Weight (kg) <span className="text-red-500">*</span>
                 </label>
-                <div className="mt-1">
+                <div className="mt-1 relative">
                   <input
                     type="number"
                     name="weight"
                     id="weight"
                     value={formData.weight}
                     onChange={handleChange}
-                    className={`shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border-gray-300 rounded-md ${
-                      errors.weight ? "border-red-500" : ""
+                    className={`block w-full px-4 py-3 text-sm border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                      errors.weight
+                        ? "border-red-500 bg-red-50 focus:ring-red-500"
+                        : "border-gray-300 bg-white hover:border-gray-400 focus:bg-white"
                     }`}
+                    placeholder="65"
                   />
+                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                    <span className="text-gray-400 text-sm">kg</span>
+                  </div>
                   {errors.weight && (
-                    <p className="mt-1 text-sm text-red-600">{errors.weight}</p>
+                    <p className="mt-2 text-sm text-red-600 flex items-center">
+                      <svg
+                        className="w-4 h-4 mr-1"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      {errors.weight}
+                    </p>
                   )}
                 </div>
               </div>
@@ -399,18 +562,20 @@ const RegisterPage = () => {
               <div className="sm:col-span-3">
                 <label
                   htmlFor="category"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
                 >
                   Category <span className="text-red-500">*</span>
                 </label>
-                <div className="mt-1">
+                <div className="mt-1 relative">
                   <select
                     id="category"
                     name="category"
                     value={formData.category}
                     onChange={handleChange}
-                    className={`shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border-gray-300 rounded-md ${
-                      errors.category ? "border-red-500" : ""
+                    className={`block w-full px-4 py-3 text-sm border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent appearance-none bg-white ${
+                      errors.category
+                        ? "border-red-500 bg-red-50 focus:ring-red-500"
+                        : "border-gray-300 hover:border-gray-400"
                     }`}
                   >
                     <option value="">Select a category</option>
@@ -418,8 +583,34 @@ const RegisterPage = () => {
                     <option value="teen">Teen Kenics (13-17 years)</option>
                     <option value="mrs">Mrs. Kenics (Married women)</option>
                   </select>
+                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                    <svg
+                      className="h-5 w-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </div>
                   {errors.category && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p className="mt-2 text-sm text-red-600 flex items-center">
+                      <svg
+                        className="w-4 h-4 mr-1"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
                       {errors.category}
                     </p>
                   )}
@@ -445,8 +636,10 @@ const RegisterPage = () => {
                   Profile Photo <span className="text-red-500">*</span>
                 </label>
                 <div
-                  className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md ${
-                    errors.profilePhoto ? "border-red-500" : ""
+                  className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-lg transition-all duration-200 ${
+                    errors.profilePhoto
+                      ? "border-red-500 bg-red-50"
+                      : "border-gray-300 bg-gray-50 hover:border-pink-400 hover:bg-pink-50"
                   }`}
                 >
                   <div className="space-y-1 text-center">
@@ -513,10 +706,10 @@ const RegisterPage = () => {
                   Additional Photos
                 </label>
                 <div
-                  className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md ${
+                  className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-lg transition-all duration-200 ${
                     errors.additionalPhotos
-                      ? "border-red-500"
-                      : "border-gray-300"
+                      ? "border-red-500 bg-red-50"
+                      : "border-gray-300 bg-gray-50 hover:border-pink-400 hover:bg-pink-50"
                   }`}
                 >
                   <div className="space-y-1 text-center">
@@ -637,27 +830,46 @@ const RegisterPage = () => {
               <div className="sm:col-span-6">
                 <label
                   htmlFor="bio"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
                 >
-                  Short Bio (Max 300 characters)
+                  Short Bio (Max 300 characters){" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <div className="mt-1">
                   <textarea
                     id="bio"
                     name="bio"
-                    rows={3}
+                    rows={4}
                     maxLength={300}
                     value={formData.bio}
                     onChange={handleChange}
-                    className={`shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border ${
-                      errors.bio ? "border-red-500" : "border-gray-300"
-                    } rounded-md`}
+                    className={`block w-full px-4 py-3 text-sm border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-none ${
+                      errors.bio
+                        ? "border-red-500 bg-red-50 focus:ring-red-500"
+                        : "border-gray-300 bg-white hover:border-gray-400 focus:bg-white"
+                    }`}
+                    placeholder="Tell us about yourself..."
                   />
-                  <p className="mt-1 text-xs text-gray-500">
-                    {formData.bio.length}/300 characters
-                  </p>
+                  <div className="mt-2 flex items-center justify-between">
+                    <p className="text-xs text-gray-500">
+                      {formData.bio.length}/300 characters
+                    </p>
+                  </div>
                   {errors.bio && (
-                    <p className="mt-1 text-sm text-red-600">{errors.bio}</p>
+                    <p className="mt-2 text-sm text-red-600 flex items-center">
+                      <svg
+                        className="w-4 h-4 mr-1"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      {errors.bio}
+                    </p>
                   )}
                 </div>
               </div>
@@ -665,24 +877,38 @@ const RegisterPage = () => {
               <div className="sm:col-span-6">
                 <label
                   htmlFor="experience"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
                 >
-                  Modeling/Pageant Experience
+                  Modeling/Pageant Experience{" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <div className="mt-1">
                   <textarea
                     id="experience"
                     name="experience"
-                    rows={3}
+                    rows={4}
                     value={formData.experience}
                     onChange={handleChange}
-                    className={`shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border ${
-                      errors.experience ? "border-red-500" : "border-gray-300"
-                    } rounded-md`}
+                    className={`block w-full px-4 py-3 text-sm border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-none ${
+                      errors.experience
+                        ? "border-red-500 bg-red-50 focus:ring-red-500"
+                        : "border-gray-300 bg-white hover:border-gray-400 focus:bg-white"
+                    }`}
                     placeholder="List any previous pageant experience, titles won, or relevant experience"
                   />
                   {errors.experience && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p className="mt-2 text-sm text-red-600 flex items-center">
+                      <svg
+                        className="w-4 h-4 mr-1"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
                       {errors.experience}
                     </p>
                   )}
@@ -692,7 +918,7 @@ const RegisterPage = () => {
               <div className="sm:col-span-6">
                 <label
                   htmlFor="achievements"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
                 >
                   Achievements & Awards
                 </label>
@@ -700,10 +926,10 @@ const RegisterPage = () => {
                   <textarea
                     id="achievements"
                     name="achievements"
-                    rows={2}
+                    rows={3}
                     value={formData.achievements}
                     onChange={handleChange}
-                    className="shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border border-gray-300 rounded-md"
+                    className="block w-full px-4 py-3 text-sm border border-gray-300 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-none bg-white hover:border-gray-400 focus:bg-white"
                     placeholder="List any notable achievements or awards"
                   />
                 </div>
@@ -726,12 +952,12 @@ const RegisterPage = () => {
               <div className="sm:col-span-2">
                 <label
                   htmlFor="socialMedia.instagram"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
                 >
                   Instagram
                 </label>
-                <div className="mt-1 flex rounded-md shadow-sm">
-                  <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
+                <div className="mt-1 flex rounded-lg shadow-sm overflow-hidden">
+                  <span className="inline-flex items-center px-4 border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
                     @
                   </span>
                   <input
@@ -740,7 +966,7 @@ const RegisterPage = () => {
                     id="socialMedia.instagram"
                     value={formData.socialMedia.instagram}
                     onChange={handleChange}
-                    className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-pink-500 focus:border-pink-500 sm:text-sm border-gray-300"
+                    className="flex-1 min-w-0 block w-full px-4 py-3 rounded-r-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm border border-l-0 border-gray-300 bg-white hover:border-gray-400 transition-all duration-200 focus:outline-none"
                     placeholder="username"
                   />
                 </div>
@@ -749,12 +975,12 @@ const RegisterPage = () => {
               <div className="sm:col-span-2">
                 <label
                   htmlFor="socialMedia.facebook"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
                 >
                   Facebook
                 </label>
-                <div className="mt-1 flex rounded-md shadow-sm">
-                  <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
+                <div className="mt-1 flex rounded-lg shadow-sm overflow-hidden">
+                  <span className="inline-flex items-center px-4 border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
                     @
                   </span>
                   <input
@@ -763,7 +989,7 @@ const RegisterPage = () => {
                     id="socialMedia.facebook"
                     value={formData.socialMedia.facebook}
                     onChange={handleChange}
-                    className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-pink-500 focus:border-pink-500 sm:text-sm border-gray-300"
+                    className="flex-1 min-w-0 block w-full px-4 py-3 rounded-r-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm border border-l-0 border-gray-300 bg-white hover:border-gray-400 transition-all duration-200 focus:outline-none"
                     placeholder="username"
                   />
                 </div>
@@ -772,12 +998,12 @@ const RegisterPage = () => {
               <div className="sm:col-span-2">
                 <label
                   htmlFor="socialMedia.tiktok"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
                 >
                   Tiktok
                 </label>
-                <div className="mt-1 flex rounded-md shadow-sm">
-                  <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
+                <div className="mt-1 flex rounded-lg shadow-sm overflow-hidden">
+                  <span className="inline-flex items-center px-4 border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
                     @
                   </span>
                   <input
@@ -786,7 +1012,7 @@ const RegisterPage = () => {
                     id="socialMedia.tiktok"
                     value={formData.socialMedia.tiktok}
                     onChange={handleChange}
-                    className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-pink-500 focus:border-pink-500 sm:text-sm border-gray-300"
+                    className="flex-1 min-w-0 block w-full px-4 py-3 rounded-r-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm border border-l-0 border-gray-300 bg-white hover:border-gray-400 transition-all duration-200 focus:outline-none"
                     placeholder="username"
                   />
                 </div>
@@ -795,12 +1021,12 @@ const RegisterPage = () => {
               <div className="sm:col-span-2">
                 <label
                   htmlFor="socialMedia.twitter"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
                 >
                   Twitter
                 </label>
-                <div className="mt-1 flex rounded-md shadow-sm">
-                  <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
+                <div className="mt-1 flex rounded-lg shadow-sm overflow-hidden">
+                  <span className="inline-flex items-center px-4 border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
                     @
                   </span>
                   <input
@@ -809,7 +1035,7 @@ const RegisterPage = () => {
                     id="socialMedia.twitter"
                     value={formData.socialMedia.twitter}
                     onChange={handleChange}
-                    className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-pink-500 focus:border-pink-500 sm:text-sm border-gray-300"
+                    className="flex-1 min-w-0 block w-full px-4 py-3 rounded-r-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm border border-l-0 border-gray-300 bg-white hover:border-gray-400 transition-all duration-200 focus:outline-none"
                     placeholder="username"
                   />
                 </div>
@@ -832,9 +1058,9 @@ const RegisterPage = () => {
               <div className="sm:col-span-3">
                 <label
                   htmlFor="emergencyContact.name"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
                 >
-                  Full Name
+                  Full Name <span className="text-red-500">*</span>
                 </label>
                 <div className="mt-1">
                   <input
@@ -843,14 +1069,26 @@ const RegisterPage = () => {
                     id="emergencyContact.name"
                     value={formData.emergencyContact.name}
                     onChange={handleChange}
-                    className={`shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border ${
+                    className={`block w-full px-4 py-3 text-sm border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
                       errors["emergencyContact.name"]
-                        ? "border-red-500"
-                        : "border-gray-300"
-                    } rounded-md`}
+                        ? "border-red-500 bg-red-50 focus:ring-red-500"
+                        : "border-gray-300 bg-white hover:border-gray-400 focus:bg-white"
+                    }`}
+                    placeholder="Enter full name"
                   />
                   {errors["emergencyContact.name"] && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p className="mt-2 text-sm text-red-600 flex items-center">
+                      <svg
+                        className="w-4 h-4 mr-1"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
                       {errors["emergencyContact.name"]}
                     </p>
                   )}
@@ -860,9 +1098,9 @@ const RegisterPage = () => {
               <div className="sm:col-span-3">
                 <label
                   htmlFor="emergencyContact.relationship"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
                 >
-                  Relationship
+                  Relationship <span className="text-red-500">*</span>
                 </label>
                 <div className="mt-1">
                   <input
@@ -871,15 +1109,26 @@ const RegisterPage = () => {
                     id="emergencyContact.relationship"
                     value={formData.emergencyContact.relationship}
                     onChange={handleChange}
-                    className={`shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border ${
+                    className={`block w-full px-4 py-3 text-sm border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
                       errors["emergencyContact.relationship"]
-                        ? "border-red-500"
-                        : "border-gray-300"
-                    } rounded-md`}
+                        ? "border-red-500 bg-red-50 focus:ring-red-500"
+                        : "border-gray-300 bg-white hover:border-gray-400 focus:bg-white"
+                    }`}
                     placeholder="e.g., Parent, Sibling, Spouse"
                   />
                   {errors["emergencyContact.relationship"] && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p className="mt-2 text-sm text-red-600 flex items-center">
+                      <svg
+                        className="w-4 h-4 mr-1"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
                       {errors["emergencyContact.relationship"]}
                     </p>
                   )}
@@ -889,25 +1138,52 @@ const RegisterPage = () => {
               <div className="sm:col-span-3">
                 <label
                   htmlFor="emergencyContact.phone"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-semibold text-gray-700 mb-2"
                 >
-                  Phone Number
+                  Phone Number <span className="text-red-500">*</span>
                 </label>
-                <div className="mt-1">
+                <div className="mt-1 relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <svg
+                      className="h-5 w-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                      />
+                    </svg>
+                  </div>
                   <input
                     type="text"
                     name="emergencyContact.phone"
                     id="emergencyContact.phone"
                     value={formData.emergencyContact.phone}
                     onChange={handleChange}
-                    className={`shadow-sm focus:ring-pink-500 focus:border-pink-500 block w-full sm:text-sm border ${
+                    className={`block w-full pl-12 pr-4 py-3 text-sm border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
                       errors["emergencyContact.phone"]
-                        ? "border-red-500"
-                        : "border-gray-300"
-                    } rounded-md`}
+                        ? "border-red-500 bg-red-50 focus:ring-red-500"
+                        : "border-gray-300 bg-white hover:border-gray-400 focus:bg-white"
+                    }`}
+                    placeholder="+1234567890"
                   />
                   {errors["emergencyContact.phone"] && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p className="mt-2 text-sm text-red-600 flex items-center">
+                      <svg
+                        className="w-4 h-4 mr-1"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
                       {errors["emergencyContact.phone"]}
                     </p>
                   )}

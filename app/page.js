@@ -230,25 +230,8 @@ const Home = () => {
                 women to be confident, compassionate leaders who inspire others
                 through their actions and achievements.
               </p>
-              <button className="text-pink-600 font-semibold hover:text-pink-700 flex items-center">
-                Read More
-                <svg
-                  className="w-4 h-4 ml-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M14 5l7 7m0 0l-7 7m7-7H3"
-                  />
-                </svg>
-              </button>
             </div>
-            <div className="md:w-1/2">
+            <div className="md:w-1/2  w-full">
               <div className="relative h-80 md:h-96 rounded-xl overflow-hidden shadow-xl">
                 <Image
                   src="/images/img2.jpg"
