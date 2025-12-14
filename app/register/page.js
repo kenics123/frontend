@@ -580,16 +580,16 @@ const RegisterPage = () => {
                   >
                     <option value="">Select a category</option>
                     <option value="baby">
-                      Baby Kenics (0-12 years)(₦10000)
+                      Baby Kenics (0-12 years)(₦10,000)
                     </option>
                     <option value="miss">
-                      Miss Kenics (18-25 years)(₦40000)
+                      Miss Kenics (18-25 years)(₦40,000)
                     </option>
                     <option value="teen">
-                      Teen Kenics (13-17 years)(₦20000)
+                      Teen Kenics (13-17 years)(₦20,000)
                     </option>
                     <option value="mrs">
-                      Mrs. Kenics (Married women)(₦50000)
+                      Mrs. Kenics (Married women)(₦50,000)
                     </option>
                   </select>
                   <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">

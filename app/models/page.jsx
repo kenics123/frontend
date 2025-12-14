@@ -3,112 +3,10 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import pic1 from "../../public/pic1.jpg";
-import pic2 from "../../public/pic2.jpg";
-import pic3 from "../../public/pic3.jpg";
-import { Heart, Grid, Star, ChevronRight, Search } from "lucide-react";
-
-// Mock data - replace with actual API call
-const models = [
-  {
-    id: "10",
-    name: "Alex Johnson",
-    age: 25,
-    category: "mrs",
-    rating: 4.8,
-    votes: 1243,
-    bio: "Professional model with 5+ years in high fashion and commercial modeling. Specializes in editorial and runway.",
-    imageUrl: pic1,
-    featured: true,
-  },
-  {
-    id: "1",
-    name: "Alex Johnson",
-    age: 25,
-    category: "baby",
-    rating: 4.8,
-    votes: 1243,
-    bio: "Professional model with 5+ years in high fashion and commercial modeling. Specializes in editorial and runway.",
-    imageUrl: pic1,
-    featured: true,
-  },
-  {
-    id: "2",
-    name: "Marcus Lee",
-    age: 28,
-    category: "baby",
-    rating: 4.5,
-    votes: 987,
-    bio: "Fitness model and actor with a passion for health and wellness campaigns.",
-    imageUrl: pic2,
-    featured: false,
-  },
-  {
-    id: "3",
-    name: "Sarah Williams",
-    age: 23,
-    category: "miss",
-    rating: 4.9,
-    votes: 1856,
-    bio: "Fashion design student with a unique perspective on style and self-expression.",
-    imageUrl: pic3,
-    featured: true,
-  },
-  {
-    id: "30",
-    name: "Sarah Williams",
-    age: 23,
-    category: "teen",
-    rating: 4.9,
-    votes: 1856,
-    bio: "Fashion design student with a unique perspective on style and self-expression.",
-    imageUrl: pic3,
-    featured: true,
-  },
-  {
-    id: "4",
-    name: "Janny Jude",
-    category: "teen",
-    rating: 4.7,
-    votes: 2450,
-    bio: "Award-winning dance group known for innovative choreography and dynamic performances.",
-    imageUrl: pic1,
-    featured: false,
-  },
-  {
-    id: "5",
-    name: "Emily Brown",
-    age: 20,
-    category: "baby",
-    rating: 4.3,
-    votes: 720,
-    bio: "Emerging talent with a fresh perspective on modern fashion and beauty standards.",
-    imageUrl: pic2,
-    featured: true,
-  },
-  {
-    id: "6",
-    name: "Emily Brown",
-    age: 20,
-    category: "miss",
-    rating: 4.3,
-    votes: 720,
-    bio: "Emerging talent with a fresh perspective on modern fashion and beauty standards.",
-    imageUrl: pic2,
-    featured: true,
-  },
-  {
-    id: "8",
-    name: "Emily Brown",
-    age: 20,
-    category: "mrs",
-    rating: 4.3,
-    votes: 720,
-    bio: "Emerging talent with a fresh perspective on modern fashion and beauty standards.",
-    imageUrl: pic2,
-    featured: true,
-  },
-];
+import { Heart, Star, Search, X, ChevronLeft } from "lucide-react";
+import useSWR from "swr";
+import { getAge } from "../../functions/modifiyer";
+import Loader from "../../components/Loader";
 
 const categories = [
   { id: "baby", label: "Baby Kenics" },
@@ -118,12 +16,40 @@ const categories = [
 ];
 
 export default function ModelsPage() {
+  const { data, error, isLoading } = useSWR("/registration");
+
   const [selectedCategory, setSelectedCategory] = useState("miss");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredModels = models.filter((model) => {
+  const filteredModels = data?.filter((model) => {
     return model.category === selectedCategory;
   });
+
+  if (isLoading) return <Loader text="Loading models..." />;
+  if (error)
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <X className="w-10 h-10 text-red-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Models Not Found
+          </h2>
+          <p className="text-gray-600 mb-6">
+            {error?.message ||
+              "unable to load any model at the moment, try again later."}
+          </p>
+          <Link
+            href="/"
+            className="inline-flex items-center px-6 py-3 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4 mr-2" />
+            Back to Home
+          </Link>
+        </div>
+      </div>
+    );
 
   return (
     <div className="min-h-screen bg-linear-to-b from-pink-50 to-white">
@@ -178,33 +104,29 @@ export default function ModelsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {filteredModels.map((model) => (
             <div
-              key={model.id}
+              key={model._id}
               className={`bg-white rounded-2xl overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl ${
                 model.featured ? "ring-2 ring-pink-500" : ""
               }`}
             >
               <div className="relative h-80">
                 <Image
-                  src={model.imageUrl}
-                  alt={model.name}
+                  src={model.photos[0]}
+                  alt={model.firstName + " " + model.lastName}
                   fill
                   className="object-cover transition-transform duration-500 hover:scale-105"
                 />
-                {model.featured && (
-                  <div className="absolute top-3 left-3 bg-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                    Featured
-                  </div>
-                )}
+
                 <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent flex flex-col justify-end p-5">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-xl font-bold text-white">
-                        {model.name}
+                        {model.firstName + " " + model.lastName}
                       </h3>
                       <div className="flex items-center mt-1">
                         <Star className="w-4 h-4 text-yellow-400 fill-current mr-1" />
                         <span className="text-sm text-white">
-                          {model.rating} ({model.votes})
+                          ({model.score.voteCount}) votes
                         </span>
                       </div>
                     </div>
@@ -218,13 +140,14 @@ export default function ModelsPage() {
               <div className="p-5">
                 <div className="flex items-center justify-between mb-3">
                   <span className="px-3 py-1 bg-pink-100 text-pink-700 text-xs font-medium rounded-full">
-                    {model.category}
+                    {model.category.charAt(0).toUpperCase() +
+                      model.category.slice(1)}{" "}
+                    Kenics
                   </span>
-                  {model.age && (
-                    <span className="text-sm text-gray-500">
-                      {model.age} years
-                    </span>
-                  )}
+
+                  <span className="text-sm text-gray-500">
+                    {getAge(model.dateOfBirth)} years
+                  </span>
                 </div>
 
                 <p className="text-gray-600 text-sm mb-4 line-clamp-3">
@@ -233,7 +156,7 @@ export default function ModelsPage() {
 
                 <div className="flex space-x-3">
                   <Link
-                    href={`/models/${model.id}`}
+                    href={`/models/${model._id}`}
                     className="flex-1 text-center px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors text-sm font-medium"
                   >
                     View Profile

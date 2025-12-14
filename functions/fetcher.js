@@ -1,4 +1,6 @@
 const BASE_URL = "https://backend-er1g.onrender.com";
+// const BASE_URL = "http://localhost:3001";
+
 export const globalFetcher = async (path, options = {}) => {
   const url = path.startsWith("http") ? path : `${BASE_URL}${path}`;
   const isFormData = options.body instanceof FormData;
