@@ -1,4 +1,4 @@
-const BASE_URL = "https://backend-er1g.onrender.com";
+const BASE_URL = "https://backend-1-mwne.onrender.com";
 // const BASE_URL = "http://localhost:3001";
 
 export const globalFetcher = async (path, options = {}) => {
