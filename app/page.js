@@ -314,37 +314,40 @@ const Home = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {(activeContest?.categories?.length
-              ? activeContest.categories.map((category) => ({
-                  title: category.name,
-                  description:
-                    category.description ||
-                    `Registration fee: ${formatNaira(category.price)}`,
-                  price: category.price,
-                }))
-              : [
-                  {
-                    title: "No active contest",
-                    description:
-                      "Categories will appear here once an admin activates a contest.",
-                  },
-                ]
-            ).map((category, index) => (
-              <div
-                key={index}
-                className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition duration-300"
-              >
-                <h3 className="text-xl font-bold text-gray-800 mb-3">
-                  {category.title}
-                </h3>
-                <p className="text-gray-600 mb-3">{category.description}</p>
-                {category.price != null && (
-                  <p className="text-pink-600 font-semibold">
-                    {formatNaira(category.price)}
+            {activeContest?.categories?.length > 0 ? (
+              activeContest.categories.map((category) => (
+                <div
+                  key={category._id || category.slug || category.name}
+                  className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition duration-300"
+                >
+                  <h3 className="text-xl font-bold text-gray-800 mb-3">
+                    {category.name}
+                  </h3>
+                  <p className="text-gray-600 mb-3">
+                    {category.description ||
+                      `Registration fee: ${formatNaira(category.price)}`}
                   </p>
-                )}
+                  {category.price != null && (
+                    <p className="text-pink-600 font-semibold">
+                      {formatNaira(category.price)}
+                    </p>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="md:col-span-3 bg-white p-8 rounded-xl shadow-lg text-center">
+                <h3 className="text-xl font-bold text-gray-800 mb-3">
+                  {contestName
+                    ? "No categories yet"
+                    : "No active contest"}
+                </h3>
+                <p className="text-gray-600">
+                  {contestName
+                    ? "Contest categories will be listed here shortly. Please check back soon."
+                    : "Contest categories will be announced when registration opens. Please check back soon."}
+                </p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>
