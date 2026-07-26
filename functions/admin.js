@@ -59,6 +59,13 @@ export function useCreateContest() {
   });
 }
 
+export async function updateContest(id, payload) {
+  return authFetcher(`/contest/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
 export function useAddCategory(contestId) {
   return useSWRMutation(
     contestId ? `/contest/${contestId}/categories` : null,
@@ -85,4 +92,40 @@ export function useContactMessages(enabled = true) {
 
 export async function markContactRead(id) {
   return authFetcher(`/contact/${id}/read`, { method: "PATCH" });
+}
+
+export function useAdminRegistrations(contestId) {
+  const query = contestId
+    ? `/registration/admin/list?contestId=${encodeURIComponent(contestId)}`
+    : "/registration/admin/list";
+  return useSWR(query, authFetcher);
+}
+
+export function useAdminStats(enabled = true) {
+  return useSWR(enabled ? "/admin/stats" : null, authFetcher);
+}
+
+export function useAdminRegistration(id) {
+  return useSWR(
+    id ? `/registration/admin/${id}` : null,
+    authFetcher,
+  );
+}
+
+export function toDateInputValue(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toISOString().slice(0, 10);
+}
+
+export function formatShowDate(value) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString("en-NG", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }

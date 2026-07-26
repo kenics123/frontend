@@ -9,7 +9,15 @@ import { formatNaira, useActiveContest } from "../functions/contest";
 const Home = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [countdown, setCountdown] = useState({
+    days: "00",
+    hours: "00",
+    minutes: "00",
+    seconds: "00",
+    ended: false,
+  });
   const { data: activeContest } = useActiveContest();
+  const contestName = activeContest?.name?.trim() || "";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,6 +30,54 @@ const Home = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [scrolled]);
+
+  useEffect(() => {
+    const showDate = activeContest?.showDate;
+    if (!showDate) {
+      setCountdown({
+        days: "00",
+        hours: "00",
+        minutes: "00",
+        seconds: "00",
+        ended: false,
+      });
+      return;
+    }
+
+    const target = new Date(showDate).getTime();
+    if (Number.isNaN(target)) return;
+
+    const tick = () => {
+      const diff = target - Date.now();
+      if (diff <= 0) {
+        setCountdown({
+          days: "00",
+          hours: "00",
+          minutes: "00",
+          seconds: "00",
+          ended: true,
+        });
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diff / (1000 * 60)) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
+
+      setCountdown({
+        days: String(days).padStart(2, "0"),
+        hours: String(hours).padStart(2, "0"),
+        minutes: String(minutes).padStart(2, "0"),
+        seconds: String(seconds).padStart(2, "0"),
+        ended: false,
+      });
+    };
+
+    tick();
+    const timer = setInterval(tick, 1000);
+    return () => clearInterval(timer);
+  }, [activeContest?.showDate]);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
@@ -196,7 +252,7 @@ const Home = () => {
         </div>
         <div className="container mx-auto px-4 text-center text-white">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
-            KENICS PAGEANT 2025
+            {contestName || "KENICS PAGEANT"}
           </h1>
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
             Celebrating Beauty, Grace, and Empowerment
@@ -252,9 +308,7 @@ const Home = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-              {activeContest
-                ? `${activeContest.name} Categories`
-                : "Our Categories"}
+              {contestName ? `${contestName} Categories` : "Our Categories"}
             </h2>
             <div className="w-20 h-1 bg-pink-600 mx-auto"></div>
           </div>
@@ -298,19 +352,26 @@ const Home = () => {
       {/* Countdown Section */}
       <section className="py-20 bg-pink-600 text-white">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-8">
+          <h2 className="text-3xl md:text-4xl font-bold mb-3">
             Grand Finale Countdown
           </h2>
+          <p className="text-pink-100 mb-8">
+            {activeContest?.showDate
+              ? countdown.ended
+                ? "The show date has arrived!"
+                : `Counting down to ${contestName || "the main show"}`
+              : "Activate a contest with a show date to start the countdown"}
+          </p>
           <div className="flex justify-center space-x-2 sm:space-x-6">
             {[
-              { value: "45", label: "Days" },
-              { value: "12", label: "Hours" },
-              { value: "30", label: "Minutes" },
-              { value: "45", label: "Seconds" },
+              { value: countdown.days, label: "Days" },
+              { value: countdown.hours, label: "Hours" },
+              { value: countdown.minutes, label: "Minutes" },
+              { value: countdown.seconds, label: "Seconds" },
             ].map((item, index) => (
               <div
                 key={index}
-                className="bg-white bg-opacity-20 rounded-lg p-4 sm:p-6 w-20 sm:w-28"
+                className="bg-white/20 rounded-lg p-4 sm:p-6 w-20 sm:w-28"
               >
                 <div className="text-2xl sm:text-4xl font-bold">
                   {item.value}
@@ -321,9 +382,12 @@ const Home = () => {
               </div>
             ))}
           </div>
-          <button className="mt-10 bg-white text-pink-600 hover:bg-gray-100 px-8 py-3 rounded-full text-lg font-medium transition duration-300">
-            Get Your Tickets
-          </button>
+          <Link
+            href="/register"
+            className="inline-block mt-10 bg-white text-pink-600 hover:bg-gray-100 px-8 py-3 rounded-full text-lg font-medium transition duration-300"
+          >
+            Apply Now
+          </Link>
         </div>
       </section>
 

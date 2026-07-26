@@ -17,7 +17,7 @@ export default function AdminLoginPage() {
 
   useEffect(() => {
     if (getAdminToken()) {
-      router.replace("/admin");
+      router.replace("/admin/dashboard");
     }
   }, [router]);
 
@@ -27,7 +27,7 @@ export default function AdminLoginPage() {
       const result = await trigger(form);
       saveAdminSession(result.accessToken, result.admin);
       toast.success("Welcome back");
-      router.push("/admin");
+      router.push("/admin/dashboard");
     } catch (error) {
       toast.error(error?.message || "Login failed");
     }
