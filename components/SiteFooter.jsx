@@ -35,18 +35,38 @@ export default function SiteFooter() {
                 </Link>
               </li>
               <li>
+                <Link href="/faq" className="text-gray-400 hover:text-white">
+                  FAQ
+                </Link>
+              </li>
+              <li>
                 <Link href="/contact" className="text-gray-400 hover:text-white">
-                  Contact
+                  Contact Us
                 </Link>
               </li>
             </ul>
           </div>
           <div>
-            <h4 className="font-semibold mb-4">Contact</h4>
+            <h4 className="font-semibold mb-4">Contact Us</h4>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li>Warri, Delta State, Nigeria</li>
-              <li>info@kenicspageant.com</li>
-              <li>+234 800 000 0000</li>
+              <li>
+                <a
+                  href="mailto:info@kenicspageant.com"
+                  className="hover:text-white"
+                >
+                  info@kenicspageant.com
+                </a>
+              </li>
+              <li>
+                <a href="tel:+2348026190053" className="hover:text-white">
+                  +2348026190053
+                </a>
+              </li>
+              <li>
+                <Link href="/contact" className="hover:text-white">
+                  Send a message
+                </Link>
+              </li>
             </ul>
           </div>
           <div>
@@ -65,6 +85,12 @@ export default function SiteFooter() {
             reserved.
           </p>
           <div className="flex gap-4">
+            <Link href="/faq" className="hover:text-white">
+              FAQ
+            </Link>
+            <Link href="/contact" className="hover:text-white">
+              Contact Us
+            </Link>
             <Link href="/terms" className="hover:text-white">
               Terms
             </Link>

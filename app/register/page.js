@@ -1,55 +1,45 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRegister } from "../../functions/registration";
 import { formatNaira, useActiveContest } from "../../functions/contest";
 import { Toaster, toast } from "sonner";
 
-// TEST PREFILL: leave email + photos empty for quick payment testing
 const RegisterPage = () => {
   const { trigger, isMutating } = useRegister();
   const { data: activeContest, isLoading: contestLoading } = useActiveContest();
 
   const [formData, setFormData] = useState({
-    firstName: "Ada",
-    lastName: "Okafor",
+    firstName: "",
+    lastName: "",
     email: "",
-    phone: "08012345678",
-    dateOfBirth: "2000-05-15",
-    height: "5'8\"",
-    weight: "58kg",
+    phone: "",
+    dateOfBirth: "",
+    height: "",
+    weight: "",
     categoryId: "",
-    bio: "Test contestant bio for Kenics registration payment flow.",
-    experience: "2 years modelling experience (test).",
-    achievements: "Test achievement — pageant finalist.",
+    bio: "",
+    experience: "",
+    achievements: "",
     socialMedia: {
-      facebook: "ada.okafor.test",
-      instagram: "adaokafor_test",
-      twitter: "adaokafor_test",
-      tiktok: "adaokafor_test",
+      facebook: "",
+      instagram: "",
+      twitter: "",
+      tiktok: "",
     },
     emergencyContact: {
-      name: "Chidi Okafor",
-      relationship: "Brother",
-      phone: "08087654321",
+      name: "",
+      relationship: "",
+      phone: "",
     },
-    termsAccepted: true,
+    termsAccepted: false,
   });
 
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [additionalPhotos, setAdditionalPhotos] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
-
-  useEffect(() => {
-    if (!formData.categoryId && activeContest?.categories?.length) {
-      setFormData((prev) => ({
-        ...prev,
-        categoryId: activeContest.categories[0]._id,
-      }));
-    }
-  }, [activeContest, formData.categoryId]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;

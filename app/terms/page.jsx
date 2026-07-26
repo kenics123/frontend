@@ -289,7 +289,15 @@ export default function TermsPage() {
             </p>
             <ul className="list-none space-y-1 text-gray-600">
               <li>Email: info@kenicspageant.com</li>
-              <li>Location: Warri, Delta State, Nigeria</li>
+              <li>
+                Phone:{" "}
+                <a
+                  href="tel:+2348026190053"
+                  className="text-pink-600 hover:underline"
+                >
+                  +2348026190053
+                </a>
+              </li>
               <li>
                 Contact form:{" "}
                 <Link

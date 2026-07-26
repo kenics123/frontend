@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, MapPin, Phone, Send } from "lucide-react";
+import { Mail, Phone, Send } from "lucide-react";
 import { Toaster, toast } from "sonner";
 import SiteHeader from "../../components/SiteHeader";
 import SiteFooter from "../../components/SiteFooter";
@@ -65,16 +65,6 @@ export default function ContactPage() {
           <div className="space-y-6">
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-pink-50">
               <div className="w-11 h-11 rounded-full bg-pink-100 flex items-center justify-center mb-4">
-                <MapPin className="w-5 h-5 text-pink-600" />
-              </div>
-              <h3 className="font-semibold text-gray-900 mb-1">Location</h3>
-              <p className="text-gray-600 text-sm">
-                Warri, Delta State, Nigeria
-              </p>
-            </div>
-
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-pink-50">
-              <div className="w-11 h-11 rounded-full bg-pink-100 flex items-center justify-center mb-4">
                 <Mail className="w-5 h-5 text-pink-600" />
               </div>
               <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
@@ -92,10 +82,10 @@ export default function ContactPage() {
               </div>
               <h3 className="font-semibold text-gray-900 mb-1">Phone</h3>
               <a
-                href="tel:+2348000000000"
+                href="tel:+2348026190053"
                 className="text-pink-600 text-sm hover:underline"
               >
-                +234 800 000 0000
+                +2348026190053
               </a>
             </div>
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import AdminShell from "../../../components/AdminShell";
@@ -13,15 +13,17 @@ import Loader from "../../../components/Loader";
 
 export default function AdminRegistrationsPage() {
   const { data: contests, isLoading: contestsLoading } = useContests(true);
+  // Empty string = all contests
   const [contestId, setContestId] = useState("");
-  const { data: registrations, isLoading } = useAdminRegistrations(contestId);
+  const {
+    data: registrationsData,
+    isLoading,
+    error,
+  } = useAdminRegistrations(contestId);
 
-  useEffect(() => {
-    if (!contestId && contests?.length) {
-      const active = contests.find((c) => c.isActive);
-      setContestId((active || contests[0])._id);
-    }
-  }, [contests, contestId]);
+  const registrations = Array.isArray(registrationsData)
+    ? registrationsData
+    : [];
 
   const selectedContest = useMemo(
     () => (contests || []).find((c) => c._id === contestId),
@@ -51,6 +53,7 @@ export default function AdminRegistrationsPage() {
               className="w-full px-4 py-3 border border-pink-200 rounded-lg bg-white"
               disabled={contestsLoading}
             >
+              <option value="">All contests</option>
               {(contests || []).map((contest) => (
                 <option key={contest._id} value={contest._id}>
                   {contest.name}
@@ -61,10 +64,22 @@ export default function AdminRegistrationsPage() {
           </div>
         </div>
 
-        {selectedContest && (
+        {selectedContest ? (
           <div className="bg-pink-50 border border-pink-100 rounded-xl px-4 py-3 text-sm text-pink-800">
             Showing registrations for <strong>{selectedContest.name}</strong> —
-            show date {formatShowDate(selectedContest.showDate)}
+            show date {formatShowDate(selectedContest.showDate)} (
+            {registrations.length})
+          </div>
+        ) : (
+          <div className="bg-pink-50 border border-pink-100 rounded-xl px-4 py-3 text-sm text-pink-800">
+            Showing registrations for <strong>all contests</strong> (
+            {registrations.length})
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-sm text-red-700">
+            {error?.message || "Could not load registrations"}
           </div>
         )}
 
@@ -77,6 +92,7 @@ export default function AdminRegistrationsPage() {
                 <thead className="bg-gray-50 text-left text-gray-600">
                   <tr>
                     <th className="px-4 py-3 font-medium">Contestant</th>
+                    <th className="px-4 py-3 font-medium">Contest</th>
                     <th className="px-4 py-3 font-medium">Category</th>
                     <th className="px-4 py-3 font-medium">Contact</th>
                     <th className="px-4 py-3 font-medium">Payment</th>
@@ -86,7 +102,7 @@ export default function AdminRegistrationsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {(registrations || []).map((item) => (
+                  {registrations.map((item) => (
                     <tr
                       key={item._id}
                       className="border-t border-gray-100 hover:bg-pink-50/40"
@@ -103,6 +119,7 @@ export default function AdminRegistrationsPage() {
                                 alt={`${item.firstName} ${item.lastName}`}
                                 fill
                                 className="object-cover"
+                                unoptimized
                               />
                             ) : null}
                           </div>
@@ -115,6 +132,9 @@ export default function AdminRegistrationsPage() {
                             </p>
                           </div>
                         </Link>
+                      </td>
+                      <td className="px-4 py-3 text-gray-700">
+                        {item.contest?.name || "—"}
                       </td>
                       <td className="px-4 py-3 capitalize text-gray-700">
                         {item.category}
@@ -157,9 +177,10 @@ export default function AdminRegistrationsPage() {
                 </tbody>
               </table>
             </div>
-            {!registrations?.length && (
+            {!registrations.length && (
               <p className="p-6 text-sm text-gray-500">
-                No registrations for this contest yet.
+                No registrations found
+                {selectedContest ? " for this contest" : ""} yet.
               </p>
             )}
           </div>
