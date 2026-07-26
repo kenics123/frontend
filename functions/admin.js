@@ -78,6 +78,13 @@ export function useAddCategory(contestId) {
   );
 }
 
+export async function updateCategory(contestId, categoryId, payload) {
+  return authFetcher(`/contest/${contestId}/categories/${categoryId}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
 export async function activateContest(id) {
   return authFetcher(`/contest/${id}/activate`, { method: "PATCH" });
 }

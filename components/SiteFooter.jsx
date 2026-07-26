@@ -54,8 +54,19 @@ export default function SiteFooter() {
             </Link>
           </div>
         </div>
-        <div className="border-t border-gray-800 mt-10 pt-6 text-center text-gray-500 text-sm">
-          &copy; {new Date().getFullYear()} Kenics Pageant. All rights reserved.
+        <div className="border-t border-gray-800 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-gray-500 text-sm">
+          <p>
+            &copy; {new Date().getFullYear()} Kenics Pageant. All rights
+            reserved.
+          </p>
+          <div className="flex gap-4">
+            <Link href="/terms" className="hover:text-white">
+              Terms
+            </Link>
+            <Link href="/privacy" className="hover:text-white">
+              Privacy
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

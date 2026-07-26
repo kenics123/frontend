@@ -1237,6 +1237,8 @@ const RegisterPage = () => {
                   I agree to the{" "}
                   <Link
                     href="/terms"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-pink-600 hover:text-pink-500"
                   >
                     Terms and Conditions
@@ -1244,6 +1246,8 @@ const RegisterPage = () => {
                   and{" "}
                   <Link
                     href="/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-pink-600 hover:text-pink-500"
                   >
                     Privacy Policy

@@ -10,6 +10,7 @@ import {
   startContestVoting,
   stopContestVoting,
   toDateInputValue,
+  updateCategory,
   updateContest,
   useAddCategory,
   useContestDetail,
@@ -34,9 +35,18 @@ export default function AdminContestsPage() {
   const [categoryForm, setCategoryForm] = useState({
     name: "",
     price: "",
+    votingPrice: "",
+    description: "",
+  });
+  const [editingCategoryId, setEditingCategoryId] = useState("");
+  const [editCategoryForm, setEditCategoryForm] = useState({
+    name: "",
+    price: "",
+    votingPrice: "",
     description: "",
   });
   const [savingEdit, setSavingEdit] = useState(false);
+  const [savingCategory, setSavingCategory] = useState(false);
 
   const { data: contests, isLoading, mutate } = useContests(true);
   const { data: selectedContest, mutate: mutateSelected } =
@@ -109,13 +119,50 @@ export default function AdminContestsPage() {
       await addCategory({
         name: categoryForm.name,
         price: Number(categoryForm.price),
+        votingPrice: Number(categoryForm.votingPrice),
         description: categoryForm.description,
       });
       toast.success("Category added");
-      setCategoryForm({ name: "", price: "", description: "" });
+      setCategoryForm({
+        name: "",
+        price: "",
+        votingPrice: "",
+        description: "",
+      });
       await mutateSelected();
     } catch (error) {
       toast.error(error?.message || "Could not add category");
+    }
+  };
+
+  const startEditCategory = (category) => {
+    setEditingCategoryId(category._id);
+    setEditCategoryForm({
+      name: category.name || "",
+      price: String(category.price ?? ""),
+      votingPrice: String(category.votingPrice ?? ""),
+      description: category.description || "",
+    });
+  };
+
+  const handleUpdateCategory = async (e) => {
+    e.preventDefault();
+    if (!selectedId || !editingCategoryId) return;
+    setSavingCategory(true);
+    try {
+      await updateCategory(selectedId, editingCategoryId, {
+        name: editCategoryForm.name,
+        price: Number(editCategoryForm.price),
+        votingPrice: Number(editCategoryForm.votingPrice),
+        description: editCategoryForm.description,
+      });
+      toast.success("Category updated");
+      setEditingCategoryId("");
+      await mutateSelected();
+    } catch (error) {
+      toast.error(error?.message || "Could not update category");
+    } finally {
+      setSavingCategory(false);
     }
   };
 
@@ -366,21 +413,105 @@ export default function AdminContestsPage() {
               )}
 
               <h3 className="font-semibold text-gray-800 mb-3">Categories</h3>
-              <div className="space-y-2 mb-6">
+              <div className="space-y-3 mb-6">
                 {(selectedContest?.categories || []).map((category) => (
                   <div
                     key={category._id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-pink-50 border border-pink-100"
+                    className="p-3 rounded-lg bg-pink-50 border border-pink-100"
                   >
-                    <div>
-                      <p className="font-medium text-gray-900">{category.name}</p>
-                      <p className="text-xs text-gray-500">
-                        slug: {category.slug}
-                      </p>
-                    </div>
-                    <p className="font-semibold text-pink-700">
-                      {formatNaira(category.price)}
-                    </p>
+                    {editingCategoryId === category._id ? (
+                      <form
+                        onSubmit={handleUpdateCategory}
+                        className="grid grid-cols-1 md:grid-cols-2 gap-2"
+                      >
+                        <input
+                          required
+                          value={editCategoryForm.name}
+                          onChange={(e) =>
+                            setEditCategoryForm((p) => ({
+                              ...p,
+                              name: e.target.value,
+                            }))
+                          }
+                          className="px-3 py-2 border border-pink-200 rounded-lg bg-white"
+                          placeholder="Name"
+                        />
+                        <input
+                          required
+                          type="number"
+                          min="0"
+                          value={editCategoryForm.price}
+                          onChange={(e) =>
+                            setEditCategoryForm((p) => ({
+                              ...p,
+                              price: e.target.value,
+                            }))
+                          }
+                          className="px-3 py-2 border border-pink-200 rounded-lg bg-white"
+                          placeholder="Registration fee"
+                        />
+                        <input
+                          required
+                          type="number"
+                          min="0"
+                          value={editCategoryForm.votingPrice}
+                          onChange={(e) =>
+                            setEditCategoryForm((p) => ({
+                              ...p,
+                              votingPrice: e.target.value,
+                            }))
+                          }
+                          className="px-3 py-2 border border-pink-200 rounded-lg bg-white"
+                          placeholder="Voting price"
+                        />
+                        <input
+                          value={editCategoryForm.description}
+                          onChange={(e) =>
+                            setEditCategoryForm((p) => ({
+                              ...p,
+                              description: e.target.value,
+                            }))
+                          }
+                          className="px-3 py-2 border border-pink-200 rounded-lg bg-white"
+                          placeholder="Description"
+                        />
+                        <div className="md:col-span-2 flex gap-2">
+                          <button
+                            type="submit"
+                            disabled={savingCategory}
+                            className="px-4 py-2 bg-gray-900 text-white rounded-full text-sm disabled:opacity-60"
+                          >
+                            {savingCategory ? "Saving..." : "Save"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingCategoryId("")}
+                            className="px-4 py-2 border border-gray-300 rounded-full text-sm"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            {category.name}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            Registration: {formatNaira(category.price)} · Vote:{" "}
+                            {formatNaira(category.votingPrice || 0)} / vote
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => startEditCategory(category)}
+                          className="px-3 py-1.5 text-sm border border-pink-300 text-pink-700 rounded-full hover:bg-pink-100"
+                        >
+                          Edit
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
                 {!selectedContest?.categories?.length && (
@@ -392,7 +523,7 @@ export default function AdminContestsPage() {
 
               <form
                 onSubmit={handleAddCategory}
-                className="grid grid-cols-1 md:grid-cols-3 gap-3"
+                className="grid grid-cols-1 md:grid-cols-2 gap-3"
               >
                 <input
                   required
@@ -407,10 +538,24 @@ export default function AdminContestsPage() {
                   required
                   type="number"
                   min="0"
-                  placeholder="Price (NGN)"
+                  placeholder="Registration fee (NGN)"
                   value={categoryForm.price}
                   onChange={(e) =>
                     setCategoryForm((p) => ({ ...p, price: e.target.value }))
+                  }
+                  className="px-4 py-3 border border-pink-200 rounded-lg"
+                />
+                <input
+                  required
+                  type="number"
+                  min="0"
+                  placeholder="Voting price per vote (NGN)"
+                  value={categoryForm.votingPrice}
+                  onChange={(e) =>
+                    setCategoryForm((p) => ({
+                      ...p,
+                      votingPrice: e.target.value,
+                    }))
                   }
                   className="px-4 py-3 border border-pink-200 rounded-lg"
                 />
@@ -428,7 +573,7 @@ export default function AdminContestsPage() {
                 <button
                   type="submit"
                   disabled={addingCategory || !selectedId}
-                  className="md:col-span-3 px-6 py-3 bg-pink-600 text-white rounded-full font-medium hover:bg-pink-700 disabled:opacity-60"
+                  className="md:col-span-2 px-6 py-3 bg-pink-600 text-white rounded-full font-medium hover:bg-pink-700 disabled:opacity-60"
                 >
                   {addingCategory ? "Adding..." : "Add Category"}
                 </button>

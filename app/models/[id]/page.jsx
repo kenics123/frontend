@@ -27,6 +27,8 @@ import {
 } from "lucide-react";
 import { Toaster, toast } from "sonner";
 import Loader from "../../../components/Loader";
+import { useActiveContest, formatNaira } from "../../../functions/contest";
+import { useInitiateVote } from "../../../functions/vote";
 
 const categoryLabels = {
   baby: "Baby Kenics",
@@ -35,26 +37,74 @@ const categoryLabels = {
   mrs: "Mrs. Kenics",
 };
 
-// Vote packages with pricing
-const votePackages = [
-  { votes: 1, price: 1000, perVote: 1000, popular: false },
-  { votes: 5, price: 4500, perVote: 900, popular: false },
-  { votes: 10, price: 9000, perVote: 900, popular: true },
-  { votes: 20, price: 17000, perVote: 850, popular: false },
-  { votes: 50, price: 40000, perVote: 800, popular: false },
-  { votes: 100, price: 75000, perVote: 750, popular: false },
-];
+const VOTE_OPTIONS = [1, 5, 10, 20, 50, 100];
 
 export default function ModelDetailPage() {
   const params = useParams();
   const modelId = params?.id;
 
   const { data: model, error, isLoading } = useSWR(`/registration/${modelId}`);
+  const { data: activeContest } = useActiveContest();
+  const { trigger: initiateVote, isMutating: paying } = useInitiateVote();
 
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
   const [isVoteModalOpen, setIsVoteModalOpen] = useState(false);
-  const [selectedVotePackage, setSelectedVotePackage] = useState(null);
+  const [voteCount, setVoteCount] = useState(1);
+  const [voterForm, setVoterForm] = useState({
+    voterEmail: "",
+    voterName: "",
+    voterPhone: "",
+  });
+
+  const fromCategory = Number(model?.categoryId?.votingPrice);
+  const categoryId = model?.categoryId?._id || model?.categoryId;
+  const matchedCategory = (activeContest?.categories || []).find(
+    (c) => String(c._id) === String(categoryId) || c.slug === model?.category,
+  );
+  const votingPrice =
+    Number.isFinite(fromCategory) && fromCategory >= 0
+      ? fromCategory
+      : Number(matchedCategory?.votingPrice) || 0;
+  const totalAmount = voteCount * votingPrice;
+  const votingOpen = Boolean(activeContest?.startVoting);
+
+  const closeVoteModal = () => {
+    setIsVoteModalOpen(false);
+    setVoteCount(1);
+  };
+
+  const handleVotePayment = async () => {
+    if (!votingOpen) {
+      toast.error("Voting has not started yet");
+      return;
+    }
+    if (!voteCount || voteCount < 1) {
+      toast.error("Select at least 1 vote");
+      return;
+    }
+    if (!voterForm.voterEmail.trim()) {
+      toast.error("Enter your email to continue to payment");
+      return;
+    }
+
+    try {
+      const response = await initiateVote({
+        registrationId: modelId,
+        votes: Number(voteCount),
+        voterEmail: voterForm.voterEmail.trim(),
+        voterName: voterForm.voterName.trim() || undefined,
+        voterPhone: voterForm.voterPhone.trim() || undefined,
+      });
+      const link = response?.flutterwavePaymentUrl?.data?.link;
+      if (!link) {
+        throw new Error("Payment link was not returned");
+      }
+      window.location.href = link;
+    } catch (err) {
+      toast.error(err?.message || "Could not start vote payment");
+    }
+  };
 
   // Parse JSON strings if they exist
   const socialMedia = model?.socialMedia
@@ -586,16 +636,12 @@ export default function ModelDetailPage() {
       {isVoteModalOpen && (
         <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={() => {
-            setIsVoteModalOpen(false);
-            setSelectedVotePackage(null);
-          }}
+          onClick={closeVoteModal}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Modal Header */}
             <div className="sticky top-0 bg-linear-to-r from-pink-600 to-purple-700 text-white p-6 rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <div>
@@ -603,14 +649,11 @@ export default function ModelDetailPage() {
                     Vote for {model.firstName}
                   </h2>
                   <p className="text-white/90 text-sm">
-                    Choose a vote package to show your support
+                    {formatNaira(votingPrice)} per vote
                   </p>
                 </div>
                 <button
-                  onClick={() => {
-                    setIsVoteModalOpen(false);
-                    setSelectedVotePackage(null);
-                  }}
+                  onClick={closeVoteModal}
                   className="p-2 hover:bg-white/20 rounded-full transition-colors"
                   aria-label="Close modal"
                 >
@@ -619,9 +662,14 @@ export default function ModelDetailPage() {
               </div>
             </div>
 
-            {/* Modal Content */}
             <div className="p-6">
-              {/* Current Vote Count */}
+              {!votingOpen && (
+                <div className="mb-4 p-3 rounded-lg bg-amber-50 text-amber-800 text-sm">
+                  Voting is closed right now. An admin must start voting before
+                  payments can begin.
+                </div>
+              )}
+
               <div className="bg-linear-to-br from-pink-50 to-purple-50 rounded-xl p-4 mb-6 text-center">
                 <p className="text-sm text-gray-600 mb-1">Current Votes</p>
                 <p className="text-3xl font-bold text-pink-600">
@@ -629,145 +677,103 @@ export default function ModelDetailPage() {
                 </p>
               </div>
 
-              {/* Vote Packages */}
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Select Vote Package
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Number of votes
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {votePackages.map((pkg, index) => (
+                <div className="grid grid-cols-3 gap-2 mb-3">
+                  {VOTE_OPTIONS.map((votes) => (
                     <button
-                      key={index}
-                      onClick={() => setSelectedVotePackage(pkg)}
-                      className={`relative p-5 rounded-xl border-2 transition-all text-left ${
-                        selectedVotePackage?.votes === pkg.votes
-                          ? "border-pink-500 bg-pink-50 shadow-lg scale-105"
-                          : "border-gray-200 hover:border-pink-300 hover:shadow-md bg-white"
-                      } ${pkg.popular ? "ring-2 ring-pink-200" : ""}`}
+                      key={votes}
+                      type="button"
+                      onClick={() => setVoteCount(votes)}
+                      className={`py-3 rounded-lg border-2 font-semibold transition ${
+                        voteCount === votes
+                          ? "border-pink-500 bg-pink-50 text-pink-700"
+                          : "border-gray-200 hover:border-pink-300"
+                      }`}
                     >
-                      {pkg.popular && (
-                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-pink-600 text-white text-xs font-semibold rounded-full">
-                          Most Popular
-                        </span>
-                      )}
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <p className="text-2xl font-bold text-gray-900">
-                            {pkg.votes} {pkg.votes === 1 ? "Vote" : "Votes"}
-                          </p>
-                          {pkg.votes > 1 && (
-                            <p className="text-xs text-gray-500 mt-1">
-                              ₦{pkg.perVote.toLocaleString()} per vote
-                            </p>
-                          )}
-                        </div>
-                        <div
-                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                            selectedVotePackage?.votes === pkg.votes
-                              ? "border-pink-500 bg-pink-500"
-                              : "border-gray-300"
-                          }`}
-                        >
-                          {selectedVotePackage?.votes === pkg.votes && (
-                            <div className="w-2 h-2 bg-white rounded-full"></div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-bold text-pink-600">
-                          ₦{pkg.price.toLocaleString()}
-                        </span>
-                      </div>
-                      {pkg.votes > 1 && (
-                        <p className="text-xs text-green-600 mt-2 font-medium">
-                          Save ₦
-                          {(pkg.votes * 1000 - pkg.price).toLocaleString()}
-                        </p>
-                      )}
+                      {votes}
                     </button>
                   ))}
                 </div>
+                <input
+                  type="number"
+                  min="1"
+                  value={voteCount}
+                  onChange={(e) =>
+                    setVoteCount(Math.max(1, parseInt(e.target.value, 10) || 1))
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+                  placeholder="Custom votes"
+                />
               </div>
 
-              {/* Custom Vote Input */}
-              <div className="mb-6 p-4 bg-gray-50 rounded-xl">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Or enter custom number of votes
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="number"
-                    min="1"
-                    placeholder="Enter number of votes"
-                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                    onChange={(e) => {
-                      const votes = parseInt(e.target.value);
-                      if (votes > 0) {
-                        const price = votes * 1000;
-                        setSelectedVotePackage({
-                          votes,
-                          price,
-                          perVote: 1000,
-                          popular: false,
-                        });
-                      } else {
-                        setSelectedVotePackage(null);
-                      }
-                    }}
-                  />
+              <div className="mb-6 space-y-3">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Your details
+                </h3>
+                <input
+                  type="email"
+                  required
+                  placeholder="Email *"
+                  value={voterForm.voterEmail}
+                  onChange={(e) =>
+                    setVoterForm((p) => ({ ...p, voterEmail: e.target.value }))
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+                />
+                <input
+                  type="text"
+                  placeholder="Name (optional)"
+                  value={voterForm.voterName}
+                  onChange={(e) =>
+                    setVoterForm((p) => ({ ...p, voterName: e.target.value }))
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+                />
+                <input
+                  type="tel"
+                  placeholder="Phone (optional)"
+                  value={voterForm.voterPhone}
+                  onChange={(e) =>
+                    setVoterForm((p) => ({ ...p, voterPhone: e.target.value }))
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+                />
+              </div>
+
+              <div className="bg-linear-to-br from-pink-50 to-purple-50 rounded-xl p-5 mb-6 border-2 border-pink-200">
+                <div className="flex justify-between text-gray-700 mb-2">
+                  <span>
+                    {voteCount} × {formatNaira(votingPrice)}
+                  </span>
+                  <span className="font-medium">{formatNaira(totalAmount)}</span>
+                </div>
+                <div className="border-t border-pink-200 pt-2 flex justify-between items-center">
+                  <span className="font-bold text-gray-900">Total</span>
+                  <span className="text-2xl font-bold text-pink-600">
+                    {formatNaira(totalAmount)}
+                  </span>
                 </div>
               </div>
 
-              {/* Selected Package Summary */}
-              {selectedVotePackage && (
-                <div className="bg-linear-to-br from-pink-50 to-purple-50 rounded-xl p-5 mb-6 border-2 border-pink-200">
-                  <h4 className="font-semibold text-gray-900 mb-3">
-                    Order Summary
-                  </h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-gray-700">
-                      <span>{selectedVotePackage.votes} Votes</span>
-                      <span className="font-medium">
-                        ₦{selectedVotePackage.price.toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="border-t border-pink-200 pt-2 flex justify-between items-center">
-                      <span className="font-bold text-gray-900">Total</span>
-                      <span className="text-2xl font-bold text-pink-600">
-                        ₦{selectedVotePackage.price.toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Action Buttons */}
               <div className="flex gap-3">
                 <button
-                  onClick={() => {
-                    setIsVoteModalOpen(false);
-                    setSelectedVotePackage(null);
-                  }}
+                  type="button"
+                  onClick={closeVoteModal}
                   className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={() => {
-                    if (!selectedVotePackage) {
-                      toast.error("Please select a vote package");
-                      return;
-                    }
-                    // TODO: Integrate with payment API
-                    toast.success("Voting has not started yet");
-                    // Here you would typically redirect to payment gateway
-                    // window.location.href = `/payment?votes=${selectedVotePackage.votes}&modelId=${modelId}&amount=${selectedVotePackage.price}`;
-                  }}
-                  disabled={!selectedVotePackage}
+                  type="button"
+                  onClick={handleVotePayment}
+                  disabled={!votingOpen || paying || totalAmount <= 0}
                   className="flex-1 px-6 py-3 bg-linear-to-r from-pink-600 to-purple-700 text-white rounded-lg hover:from-pink-700 hover:to-purple-800 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   <Heart className="w-5 h-5 fill-current" />
-                  Proceed to Payment
+                  {paying ? "Redirecting..." : "Proceed to Payment"}
                 </button>
               </div>
             </div>
