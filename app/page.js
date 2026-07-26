@@ -127,7 +127,7 @@ const Home = () => {
 
           {/* Mobile Navigation */}
           {isMenuOpen && (
-            <div className="md:hidden mt-4 pb-4">
+            <div className="md:hidden mt-4 pb-4 bg-black/50 backdrop-blur-md">
               <div className="flex flex-col space-y-3">
                 <Link
                   href="/"

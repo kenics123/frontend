@@ -55,7 +55,7 @@ export default function ModelDetailPage() {
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
   const [isVoteModalOpen, setIsVoteModalOpen] = useState(false);
   const [selectedVotePackage, setSelectedVotePackage] = useState(null);
-  console.log(model);
+
   // Parse JSON strings if they exist
   const socialMedia = model?.socialMedia
     ? typeof model.socialMedia === "string"
