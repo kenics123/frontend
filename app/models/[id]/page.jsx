@@ -24,6 +24,9 @@ import {
   ChevronRight,
   X,
   ExternalLink,
+  Copy,
+  Check,
+  MessageCircle,
 } from "lucide-react";
 import { Toaster, toast } from "sonner";
 import Loader from "../../../components/Loader";
@@ -50,6 +53,8 @@ export default function ModelDetailPage() {
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
   const [isVoteModalOpen, setIsVoteModalOpen] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const [voteCount, setVoteCount] = useState(1);
   const [voterForm, setVoterForm] = useState({
     voterEmail: "",
@@ -148,22 +153,71 @@ export default function ModelDetailPage() {
     );
   }
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `${model.firstName} ${model.lastName} - Kenics Pageant`,
-          text: `Check out ${model.firstName} ${model.lastName} on Kenics Pageant!`,
-          url: window.location.href,
-        });
-      } catch (err) {
-        // User cancelled or error occurred
-      }
-    } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard.writeText(window.location.href);
-      toast.success("Link copied to clipboard!");
+  const shareUrl =
+    typeof window !== "undefined"
+      ? window.location.href
+      : `https://www.kenicspageant.online/models/${modelId}`;
+  const shareTitle = model
+    ? `${model.firstName} ${model.lastName} — Kenics Pageant`
+    : "Kenics Pageant";
+  const shareText = model
+    ? `Vote for ${model.firstName} ${model.lastName} in Kenics Pageant!`
+    : "Check out Kenics Pageant!";
+
+  const openShare = () => {
+    setLinkCopied(false);
+    setIsShareOpen(true);
+  };
+
+  const copyShareLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setLinkCopied(true);
+      toast.success("Profile link copied");
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      toast.error("Could not copy link");
     }
+  };
+
+  const nativeShare = async () => {
+    if (!navigator.share) {
+      await copyShareLink();
+      return;
+    }
+    try {
+      await navigator.share({
+        title: shareTitle,
+        text: shareText,
+        url: shareUrl,
+      });
+      setIsShareOpen(false);
+    } catch (err) {
+      if (err?.name !== "AbortError") {
+        toast.error("Could not open share menu");
+      }
+    }
+  };
+
+  const shareToWhatsApp = () => {
+    const url = `https://wa.me/?text=${encodeURIComponent(
+      `${shareText}\n${shareUrl}`,
+    )}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  const shareToFacebook = () => {
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+      shareUrl,
+    )}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  const shareToTwitter = () => {
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+      shareText,
+    )}&url=${encodeURIComponent(shareUrl)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const nextPhoto = () => {
@@ -335,7 +389,8 @@ export default function ModelDetailPage() {
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-3">
                 <button
-                  onClick={handleShare}
+                  type="button"
+                  onClick={openShare}
                   className="flex items-center gap-2 px-6 py-3 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30 transition-all text-white font-medium"
                 >
                   <Share2 className="w-5 h-5" />
@@ -775,6 +830,95 @@ export default function ModelDetailPage() {
                   {paying ? "Redirecting..." : "Proceed to Payment"}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Share Modal */}
+      {isShareOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4"
+          onClick={() => setIsShareOpen(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-5 border-b border-gray-100">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">
+                  Share {model.firstName}
+                </h3>
+                <p className="text-sm text-gray-500">
+                  Help others find and vote for this contestant
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsShareOpen(false)}
+                className="p-2 rounded-full hover:bg-gray-100 text-gray-500"
+                aria-label="Close share"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-3">
+              <button
+                type="button"
+                onClick={copyShareLink}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 hover:border-pink-300 hover:bg-pink-50 transition text-left"
+              >
+                {linkCopied ? (
+                  <Check className="w-5 h-5 text-green-600" />
+                ) : (
+                  <Copy className="w-5 h-5 text-pink-600" />
+                )}
+                <span className="font-medium text-gray-900">
+                  {linkCopied ? "Link copied" : "Copy profile link"}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={shareToWhatsApp}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 hover:border-green-300 hover:bg-green-50 transition text-left"
+              >
+                <MessageCircle className="w-5 h-5 text-green-600" />
+                <span className="font-medium text-gray-900">WhatsApp</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={shareToFacebook}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition text-left"
+              >
+                <Facebook className="w-5 h-5 text-blue-600" />
+                <span className="font-medium text-gray-900">Facebook</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={shareToTwitter}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 hover:border-sky-300 hover:bg-sky-50 transition text-left"
+              >
+                <Twitter className="w-5 h-5 text-sky-500" />
+                <span className="font-medium text-gray-900">X (Twitter)</span>
+              </button>
+
+              {typeof navigator !== "undefined" && navigator.share && (
+                <button
+                  type="button"
+                  onClick={nativeShare}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-pink-600 text-white font-medium hover:bg-pink-700 transition"
+                >
+                  <Share2 className="w-5 h-5" />
+                  More share options
+                </button>
+              )}
+
+              <p className="text-xs text-gray-400 break-all pt-1">{shareUrl}</p>
             </div>
           </div>
         </div>
