@@ -406,44 +406,66 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* How it works */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-              What Our Queens Say
+              How Kenics Works
             </h2>
-            <div className="w-20 h-1 bg-pink-600 mx-auto"></div>
+            <p className="text-gray-600 max-w-2xl mx-auto mt-4">
+              From application to the grand finale — here&apos;s how contestants
+              and supporters join the journey.
+            </p>
+            <div className="w-20 h-1 bg-pink-600 mx-auto mt-6"></div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {[
               {
-                quote:
-                  "Kenics Pageant changed my life. It gave me the confidence to pursue my dreams and make a difference in my community.",
-                name: "Sarah Johnson",
-                title: "Miss Kenics 2023",
+                step: "01",
+                title: "Register",
+                description:
+                  "Choose your category, complete your profile, and secure your spot with the registration fee.",
+                href: "/register",
+                cta: "Apply now",
               },
               {
-                quote:
-                  "The sisterhood and support I found at Kenics is something I'll cherish forever. It's more than a pageant; it's a family.",
-                name: "Emily Rodriguez",
-                title: "Teen Kenics 2023",
+                step: "02",
+                title: "Get Votes",
+                description:
+                  "Share your profile with friends and family. Supporters can vote online once voting opens.",
+                href: "/models",
+                cta: "Meet contestants",
               },
               {
-                quote:
-                  "As Mrs. Kenics, I've had incredible opportunities to advocate for causes close to my heart. This platform is truly empowering.",
-                name: "Michelle Chen",
-                title: "Mrs. Kenics 2023",
+                step: "03",
+                title: "Shine",
+                description:
+                  "Compete, climb the leaderboard, and celebrate the winners crowned for each category.",
+                href: "/voting",
+                cta: "View leaderboard",
               },
-            ].map((testimonial, index) => (
-              <div key={index} className="bg-gray-50 p-8 rounded-xl">
-                <div className="text-yellow-400 text-2xl mb-4">&apos;</div>
-                <p className="text-gray-600 italic mb-6">{testimonial.quote}</p>
-                <div className="font-semibold text-gray-800">
-                  {testimonial.name}
+            ].map((item) => (
+              <div
+                key={item.step}
+                className="bg-gray-50 p-8 rounded-xl text-center border border-pink-50 hover:border-pink-200 transition"
+              >
+                <div className="text-pink-600 font-bold text-sm tracking-widest mb-3">
+                  STEP {item.step}
                 </div>
-                <div className="text-pink-600 text-sm">{testimonial.title}</div>
+                <h3 className="text-xl font-bold text-gray-800 mb-3">
+                  {item.title}
+                </h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  {item.description}
+                </p>
+                <Link
+                  href={item.href}
+                  className="inline-block text-pink-600 font-medium hover:text-pink-700"
+                >
+                  {item.cta} →
+                </Link>
               </div>
             ))}
           </div>
