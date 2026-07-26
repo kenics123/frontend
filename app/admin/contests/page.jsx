@@ -7,6 +7,8 @@ import {
   activateContest,
   deactivateContest,
   formatShowDate,
+  startContestVoting,
+  stopContestVoting,
   toDateInputValue,
   updateContest,
   useAddCategory,
@@ -139,6 +141,22 @@ export default function AdminContestsPage() {
     }
   };
 
+  const handleToggleVoting = async () => {
+    try {
+      if (selectedContest?.startVoting) {
+        await stopContestVoting(selectedId);
+        toast.success("Voting stopped");
+      } else {
+        await startContestVoting(selectedId);
+        toast.success("Voting started");
+      }
+      await mutate();
+      await mutateSelected();
+    } catch (error) {
+      toast.error(error?.message || "Could not update voting status");
+    }
+  };
+
   if (isLoading) {
     return (
       <AdminShell>
@@ -233,6 +251,18 @@ export default function AdminContestsPage() {
                   <p className="text-sm text-gray-500 mt-1">
                     Show: {formatShowDate(contest.showDate)}
                   </p>
+                  <p className="text-xs mt-1">
+                    Voting:{" "}
+                    <span
+                      className={
+                        contest.startVoting
+                          ? "text-green-700 font-medium"
+                          : "text-gray-500"
+                      }
+                    >
+                      {contest.startVoting ? "On" : "Off"}
+                    </span>
+                  </p>
                 </button>
               ))}
               {!contests?.length && (
@@ -253,7 +283,7 @@ export default function AdminContestsPage() {
                   </p>
                 </div>
                 {selectedContest && (
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {selectedContest.isActive ? (
                       <button
                         type="button"
@@ -271,6 +301,19 @@ export default function AdminContestsPage() {
                         Activate
                       </button>
                     )}
+                    <button
+                      type="button"
+                      onClick={handleToggleVoting}
+                      className={`px-4 py-2 rounded-full text-sm ${
+                        selectedContest.startVoting
+                          ? "border border-amber-300 text-amber-800 hover:bg-amber-50"
+                          : "bg-pink-600 text-white hover:bg-pink-700"
+                      }`}
+                    >
+                      {selectedContest.startVoting
+                        ? "Stop Voting"
+                        : "Start Voting"}
+                    </button>
                   </div>
                 )}
               </div>

@@ -86,6 +86,14 @@ export async function deactivateContest(id) {
   return authFetcher(`/contest/${id}/deactivate`, { method: "PATCH" });
 }
 
+export async function startContestVoting(id) {
+  return authFetcher(`/contest/${id}/start-voting`, { method: "PATCH" });
+}
+
+export async function stopContestVoting(id) {
+  return authFetcher(`/contest/${id}/stop-voting`, { method: "PATCH" });
+}
+
 export function useContactMessages(enabled = true) {
   return useSWR(enabled ? "/contact" : null, authFetcher);
 }
