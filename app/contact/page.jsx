@@ -1,15 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, Phone, Send } from "lucide-react";
+import { Mail, MessageCircle, Phone, Send } from "lucide-react";
 import { Toaster, toast } from "sonner";
 import SiteHeader from "../../components/SiteHeader";
 import SiteFooter from "../../components/SiteFooter";
 import { useSubmitContact } from "../../functions/contact";
 
+const OFFICIAL_EMAIL = "info@kenicspageant.online";
+const WHATSAPP_NUMBER = "+2348026190053";
+const WHATSAPP_LINK = "https://wa.me/2348026190053";
+
 const initialForm = {
   name: "",
   email: "",
+  whatsapp: "",
   subject: "",
   message: "",
 };
@@ -26,17 +31,28 @@ export default function ContactPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
-      toast.error("Please fill in your name, email, and message.");
+    const name = form.name.trim();
+    const email = form.email.trim();
+    const whatsapp = form.whatsapp.trim();
+    const message = form.message.trim();
+
+    if (!name || !message) {
+      toast.error("Please fill in your name and message.");
+      return;
+    }
+
+    if (!email && !whatsapp) {
+      toast.error("Provide either your email or WhatsApp number.");
       return;
     }
 
     try {
       await trigger({
-        name: form.name.trim(),
-        email: form.email.trim(),
-        subject: form.subject.trim(),
-        message: form.message.trim(),
+        name,
+        email: email || undefined,
+        whatsapp: whatsapp || undefined,
+        subject: form.subject.trim() || undefined,
+        message,
       });
       setForm(initialForm);
       toast.success("Thanks for reaching out! We'll get back to you soon.");
@@ -69,10 +85,25 @@ export default function ContactPage() {
               </div>
               <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
               <a
-                href="mailto:info@kenicspageant.com"
+                href={`mailto:${OFFICIAL_EMAIL}`}
+                className="text-pink-600 text-sm hover:underline break-all"
+              >
+                {OFFICIAL_EMAIL}
+              </a>
+            </div>
+
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-pink-50">
+              <div className="w-11 h-11 rounded-full bg-pink-100 flex items-center justify-center mb-4">
+                <MessageCircle className="w-5 h-5 text-pink-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-1">WhatsApp</h3>
+              <a
+                href={WHATSAPP_LINK}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-pink-600 text-sm hover:underline"
               >
-                info@kenicspageant.com
+                {WHATSAPP_NUMBER}
               </a>
             </div>
 
@@ -82,10 +113,10 @@ export default function ContactPage() {
               </div>
               <h3 className="font-semibold text-gray-900 mb-1">Phone</h3>
               <a
-                href="tel:+2348026190053"
+                href={`tel:${WHATSAPP_NUMBER}`}
                 className="text-pink-600 text-sm hover:underline"
               >
-                +2348026190053
+                {WHATSAPP_NUMBER}
               </a>
             </div>
           </div>
@@ -96,27 +127,29 @@ export default function ContactPage() {
             </h2>
             <p className="text-gray-500 text-sm mb-8">
               Fill out the form and our team will respond as soon as possible.
+              Provide either your email or WhatsApp number.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Full Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  value={form.name}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-pink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+                  placeholder="Your name"
+                />
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Full Name
-                  </label>
-                  <input
-                    id="name"
-                    name="name"
-                    type="text"
-                    value={form.name}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-pink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
-                    placeholder="Your name"
-                  />
-                </div>
                 <div>
                   <label
                     htmlFor="email"
@@ -134,7 +167,27 @@ export default function ContactPage() {
                     placeholder="you@example.com"
                   />
                 </div>
+                <div>
+                  <label
+                    htmlFor="whatsapp"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    WhatsApp Number
+                  </label>
+                  <input
+                    id="whatsapp"
+                    name="whatsapp"
+                    type="tel"
+                    value={form.whatsapp}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-pink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    placeholder="+234..."
+                  />
+                </div>
               </div>
+              <p className="text-xs text-gray-500 -mt-2">
+                At least one of email or WhatsApp is required.
+              </p>
 
               <div>
                 <label
@@ -159,7 +212,7 @@ export default function ContactPage() {
                   htmlFor="message"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Message
+                  Message <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   id="message"

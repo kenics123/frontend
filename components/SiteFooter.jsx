@@ -51,15 +51,20 @@ export default function SiteFooter() {
             <ul className="space-y-2 text-sm text-gray-400">
               <li>
                 <a
-                  href="mailto:info@kenicspageant.com"
+                  href="mailto:info@kenicspageant.online"
                   className="hover:text-white"
                 >
-                  info@kenicspageant.com
+                  info@kenicspageant.online
                 </a>
               </li>
               <li>
-                <a href="tel:+2348026190053" className="hover:text-white">
-                  +2348026190053
+                <a
+                  href="https://wa.me/2348026190053"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white"
+                >
+                  WhatsApp: +2348026190053
                 </a>
               </li>
               <li>

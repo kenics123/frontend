@@ -52,12 +52,26 @@ export default function AdminContactPage() {
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                   <div>
                     <p className="font-semibold text-gray-900">{msg.name}</p>
-                    <a
-                      href={`mailto:${msg.email}`}
-                      className="text-sm text-pink-600 hover:underline"
-                    >
-                      {msg.email}
-                    </a>
+                    <div className="space-y-1 mt-1">
+                      {msg.email ? (
+                        <a
+                          href={`mailto:${msg.email}`}
+                          className="block text-sm text-pink-600 hover:underline"
+                        >
+                          {msg.email}
+                        </a>
+                      ) : null}
+                      {msg.whatsapp ? (
+                        <a
+                          href={`https://wa.me/${String(msg.whatsapp).replace(/\D/g, "")}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block text-sm text-green-700 hover:underline"
+                        >
+                          WhatsApp: {msg.whatsapp}
+                        </a>
+                      ) : null}
+                    </div>
                     {msg.subject && (
                       <p className="text-sm font-medium text-gray-800 mt-2">
                         {msg.subject}

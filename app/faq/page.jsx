@@ -45,7 +45,7 @@ const faqs = [
   {
     question: "How do I contact Kenics support?",
     answer:
-      "Use the Contact Us page to send a message, or reach us by email at info@kenicspageant.com or phone at +2348026190053.",
+      "Use the Contact Us page to send a message, or reach us by email at info@kenicspageant.online or WhatsApp at +2348026190053.",
   },
 ];
 

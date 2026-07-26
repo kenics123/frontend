@@ -236,7 +236,7 @@ export default function PrivacyPage() {
             </ul>
             <p className="text-gray-600 leading-relaxed mt-3">
               To exercise these rights, contact{" "}
-              <span className="font-medium">info@kenicspageant.com</span> or use
+              <span className="font-medium">info@kenicspageant.online</span> or use
               our{" "}
               <Link href="/contact" className="text-pink-600 hover:underline">
                 contact form
@@ -293,7 +293,7 @@ export default function PrivacyPage() {
               For privacy questions or requests:
             </p>
             <ul className="list-none space-y-1 text-gray-600">
-              <li>Email: info@kenicspageant.com</li>
+              <li>Email: info@kenicspageant.online</li>
               <li>
                 Phone:{" "}
                 <a

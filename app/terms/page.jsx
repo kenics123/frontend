@@ -288,7 +288,7 @@ export default function TermsPage() {
               For questions about these Terms, contact us:
             </p>
             <ul className="list-none space-y-1 text-gray-600">
-              <li>Email: info@kenicspageant.com</li>
+              <li>Email: info@kenicspageant.online</li>
               <li>
                 Phone:{" "}
                 <a
