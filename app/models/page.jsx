@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, Star, Search, X, ChevronLeft } from "lucide-react";
+import { Star, Search, X, ChevronLeft } from "lucide-react";
 import useSWR from "swr";
 import { getAge } from "../../functions/modifiyer";
 import { useActiveContest } from "../../functions/contest";
@@ -150,21 +150,16 @@ export default function ModelsPage() {
                 />
 
                 <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent flex flex-col justify-end p-5">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-xl font-bold text-white">
-                        {model.firstName + " " + model.lastName}
-                      </h3>
-                      <div className="flex items-center mt-1">
-                        <Star className="w-4 h-4 text-yellow-400 fill-current mr-1" />
-                        <span className="text-sm text-white">
-                          ({model.score?.voteCount || 0}) votes
-                        </span>
-                      </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white">
+                      {model.firstName + " " + model.lastName}
+                    </h3>
+                    <div className="flex items-center mt-1">
+                      <Star className="w-4 h-4 text-yellow-400 fill-current mr-1" />
+                      <span className="text-sm text-white">
+                        ({model.score?.voteCount || 0}) votes
+                      </span>
                     </div>
-                    <button className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors">
-                      <Heart className="w-5 h-5" />
-                    </button>
                   </div>
                 </div>
               </div>

@@ -157,12 +157,18 @@ export default function ModelDetailPage() {
     typeof window !== "undefined"
       ? window.location.href
       : `https://www.kenicspageant.online/models/${modelId}`;
-  const shareTitle = model
-    ? `${model.firstName} ${model.lastName} — Kenics Pageant`
-    : "Kenics Pageant";
-  const shareText = model
-    ? `Vote for ${model.firstName} ${model.lastName} in Kenics Pageant!`
-    : "Check out Kenics Pageant!";
+  const categoryName =
+    model?.categoryId?.name ||
+    matchedCategory?.name ||
+    categoryLabels[model?.category] ||
+    model?.category ||
+    "Kenics Pageant";
+  const fullName = model
+    ? `${model.firstName} ${model.lastName}`.trim()
+    : "this contestant";
+  const shareTitle = `${fullName} — Kenics Pageant`;
+  const shareText = `Hello! Please vote for me, ${fullName}, in the ${categoryName} category at Kenics Pageant. Your support means so much — I would really appreciate your vote. Thank you! ✨`;
+  const shareMessageWithLink = `${shareText}\n\n${shareUrl}`;
 
   const openShare = () => {
     setLinkCopied(false);
@@ -171,12 +177,12 @@ export default function ModelDetailPage() {
 
   const copyShareLink = async () => {
     try {
-      await navigator.clipboard.writeText(shareUrl);
+      await navigator.clipboard.writeText(shareMessageWithLink);
       setLinkCopied(true);
-      toast.success("Profile link copied");
+      toast.success("Message and link copied");
       setTimeout(() => setLinkCopied(false), 2000);
     } catch {
-      toast.error("Could not copy link");
+      toast.error("Could not copy");
     }
   };
 
@@ -201,12 +207,15 @@ export default function ModelDetailPage() {
 
   const shareToWhatsApp = () => {
     const url = `https://wa.me/?text=${encodeURIComponent(
-      `${shareText}\n${shareUrl}`,
+      shareMessageWithLink,
     )}`;
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const shareToFacebook = () => {
+    // Facebook does not allow prefilling post text; copy message then open share.
+    navigator.clipboard?.writeText(shareMessageWithLink).catch(() => {});
+    toast.message("Message copied — paste it into your Facebook post");
     const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
       shareUrl,
     )}`;
@@ -876,9 +885,12 @@ export default function ModelDetailPage() {
                   <Copy className="w-5 h-5 text-pink-600" />
                 )}
                 <span className="font-medium text-gray-900">
-                  {linkCopied ? "Link copied" : "Copy profile link"}
+                  {linkCopied ? "Copied!" : "Copy message & link"}
                 </span>
               </button>
+              <p className="text-xs text-gray-500 bg-gray-50 rounded-lg p-3 whitespace-pre-wrap">
+                {shareText}
+              </p>
 
               <button
                 type="button"
