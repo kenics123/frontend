@@ -270,15 +270,12 @@ const Home = () => {
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
             Celebrating Beauty, Grace, and Empowerment
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <div className="flex justify-center">
             <Link href="/register">
-              <button className="bg-pink-600 hover:bg-pink-700 text-white px-8 py-3 rounded-full text-lg font-medium transition duration-300 w-full sm:w-auto">
+              <button className="bg-pink-600 hover:bg-pink-700 text-white px-8 py-3 rounded-full text-lg font-medium transition duration-300">
                 Apply Now
               </button>
             </Link>
-            <button className="bg-transparent border-2 border-white hover:bg-white hover:text-pink-600 text-white px-8 py-3 rounded-full text-lg font-medium transition duration-300">
-              Learn More
-            </button>
           </div>
         </div>
       </section>
