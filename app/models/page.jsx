@@ -1,31 +1,68 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, Star, Search, X, ChevronLeft } from "lucide-react";
 import useSWR from "swr";
 import { getAge } from "../../functions/modifiyer";
+import { useActiveContest } from "../../functions/contest";
 import Loader from "../../components/Loader";
-
-const categories = [
-  { id: "baby", label: "Baby Kenics" },
-  { id: "teen", label: "Teen Kenics" },
-  { id: "miss", label: "Miss Kenics" },
-  { id: "mrs", label: "Mrs Kenics" },
-];
+import SiteHeader from "../../components/SiteHeader";
+import SiteFooter from "../../components/SiteFooter";
 
 export default function ModelsPage() {
   const { data, error, isLoading } = useSWR("/registration");
+  const { data: activeContest, isLoading: contestLoading } = useActiveContest();
 
-  const [selectedCategory, setSelectedCategory] = useState("miss");
+  const categories = useMemo(() => {
+    const list = activeContest?.categories || [];
+    return list.map((c) => ({ id: c.slug, label: c.name }));
+  }, [activeContest]);
+
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredModels = data?.filter((model) => {
-    return model.category === selectedCategory;
-  });
+  const effectiveCategory = selectedCategory || categories[0]?.id || "";
 
-  if (isLoading) return <Loader text="Loading models..." />;
+  const filteredModels = useMemo(() => {
+    if (!Array.isArray(data)) return [];
+    return data.filter((model) => {
+      const matchesCategory = !effectiveCategory
+        ? true
+        : model.category === effectiveCategory;
+      const fullName = `${model.firstName} ${model.lastName}`.toLowerCase();
+      const matchesSearch = !searchQuery.trim()
+        ? true
+        : fullName.includes(searchQuery.trim().toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [data, effectiveCategory, searchQuery]);
+
+  if (isLoading || contestLoading) return <Loader text="Loading models..." />;
+
+  if (!activeContest) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <SiteHeader />
+        <div className="flex-1 flex items-center justify-center px-4">
+          <div className="text-center max-w-md">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              No Active Contest
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Contestants will appear here once an admin activates a contest.
+            </p>
+            <Link href="/" className="text-pink-600 font-medium hover:underline">
+              Back to Home
+            </Link>
+          </div>
+        </div>
+        <SiteFooter />
+      </div>
+    );
+  }
+
   if (error)
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -52,23 +89,21 @@ export default function ModelsPage() {
     );
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-pink-50 to-white">
-      {/* Hero Section */}
+    <div className="min-h-screen bg-linear-to-b from-pink-50 to-white flex flex-col">
+      <SiteHeader />
       <div className="bg-pink-600 text-white py-12 md:py-20">
         <div className="container mx-auto px-4 text-center">
+          <p className="text-pink-100 text-sm mb-2">{activeContest.name}</p>
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Our Talented Models
           </h1>
           <p className="text-lg md:text-xl text-pink-100 max-w-3xl mx-auto">
-            Discover and connect with our diverse roster of professional models
-            and performers
+            Discover contestants registered for the active Kenics contest
           </p>
         </div>
       </div>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-12">
-        {/* Search and Filter */}
+      <main className="container mx-auto px-4 py-12 flex-1">
         <div className="mb-12">
           <div className="relative max-w-2xl mx-auto mb-8">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -76,7 +111,7 @@ export default function ModelsPage() {
             </div>
             <input
               type="text"
-              placeholder="Search models by name or specialty..."
+              placeholder="Search models by name..."
               className="block w-full pl-10 pr-3 py-3 border border-pink-200 rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -89,7 +124,7 @@ export default function ModelsPage() {
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
                 className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                  selectedCategory === category.id
+                  effectiveCategory === category.id
                     ? "bg-pink-600 text-white shadow-lg shadow-pink-500/30"
                     : "bg-white text-pink-700 hover:bg-pink-50 border border-pink-200"
                 }`}
@@ -100,14 +135,11 @@ export default function ModelsPage() {
           </div>
         </div>
 
-        {/* Models Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {filteredModels.map((model) => (
             <div
               key={model._id}
-              className={`bg-white rounded-2xl overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl ${
-                model.featured ? "ring-2 ring-pink-500" : ""
-              }`}
+              className="bg-white rounded-2xl overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl"
             >
               <div className="relative h-80">
                 <Image
@@ -126,7 +158,7 @@ export default function ModelsPage() {
                       <div className="flex items-center mt-1">
                         <Star className="w-4 h-4 text-yellow-400 fill-current mr-1" />
                         <span className="text-sm text-white">
-                          ({model.score.voteCount}) votes
+                          ({model.score?.voteCount || 0}) votes
                         </span>
                       </div>
                     </div>
@@ -139,12 +171,9 @@ export default function ModelsPage() {
 
               <div className="p-5">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="px-3 py-1 bg-pink-100 text-pink-700 text-xs font-medium rounded-full">
-                    {model.category.charAt(0).toUpperCase() +
-                      model.category.slice(1)}{" "}
-                    Kenics
+                  <span className="px-3 py-1 bg-pink-100 text-pink-700 text-xs font-medium rounded-full capitalize">
+                    {model.category}
                   </span>
-
                   <span className="text-sm text-gray-500">
                     {getAge(model.dateOfBirth)} years
                   </span>
@@ -154,23 +183,17 @@ export default function ModelsPage() {
                   {model.bio}
                 </p>
 
-                <div className="flex space-x-3">
-                  <Link
-                    href={`/models/${model._id}`}
-                    className="flex-1 text-center px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors text-sm font-medium"
-                  >
-                    View Profile
-                  </Link>
-                  <button className="p-2 text-pink-600 hover:bg-pink-50 rounded-lg transition-colors">
-                    <Heart className="w-5 h-5" />
-                  </button>
-                </div>
+                <Link
+                  href={`/models/${model._id}`}
+                  className="block text-center px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors text-sm font-medium"
+                >
+                  View Profile
+                </Link>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Empty State */}
         {filteredModels.length === 0 && (
           <div className="text-center py-16">
             <div className="w-20 h-20 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -180,17 +203,14 @@ export default function ModelsPage() {
               No models found
             </h3>
             <p className="text-gray-500">
-              Try adjusting your search or filter criteria to find what
-              you&apos;re looking for.
+              Try another category, or check back after more contestants
+              register.
             </p>
           </div>
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="py-6 mt-10 text-center text-gray-500 text-sm border-t border-gray-200">
-        &copy; {new Date().getFullYear()} KENICS. All rights reserved.
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

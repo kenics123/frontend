@@ -4,10 +4,12 @@ import { useState, useEffect } from "react";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
+import { formatNaira, useActiveContest } from "../functions/contest";
 
 const Home = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { data: activeContest } = useActiveContest();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -250,46 +252,43 @@ const Home = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-              Our Categories
+              {activeContest
+                ? `${activeContest.name} Categories`
+                : "Our Categories"}
             </h2>
             <div className="w-20 h-1 bg-pink-600 mx-auto"></div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                title: "Baby Kenics",
-                description: "Ages 0-12, children are the future.",
-                icon: "👶",
-              },
-              {
-                title: "Miss Kenics",
-                description:
-                  "Ages 18-25, celebrating beauty, intelligence, and leadership.",
-                icon: "👑",
-              },
-              {
-                title: "Teen Kenics",
-                description:
-                  "Ages 13-17, empowering the next generation of leaders.",
-                icon: "🌟",
-              },
-              {
-                title: "Mrs. Kenics",
-                description:
-                  "For married women, celebrating grace, wisdom, and family values.",
-                icon: "💍",
-              },
-            ].map((category, index) => (
+            {(activeContest?.categories?.length
+              ? activeContest.categories.map((category) => ({
+                  title: category.name,
+                  description:
+                    category.description ||
+                    `Registration fee: ${formatNaira(category.price)}`,
+                  price: category.price,
+                }))
+              : [
+                  {
+                    title: "No active contest",
+                    description:
+                      "Categories will appear here once an admin activates a contest.",
+                  },
+                ]
+            ).map((category, index) => (
               <div
                 key={index}
                 className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition duration-300"
               >
-                <div className="text-4xl mb-4">{category.icon}</div>
                 <h3 className="text-xl font-bold text-gray-800 mb-3">
                   {category.title}
                 </h3>
-                <p className="text-gray-600">{category.description}</p>
+                <p className="text-gray-600 mb-3">{category.description}</p>
+                {category.price != null && (
+                  <p className="text-pink-600 font-semibold">
+                    {formatNaira(category.price)}
+                  </p>
+                )}
               </div>
             ))}
           </div>

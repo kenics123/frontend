@@ -1,13 +1,13 @@
 const BASE_URL = "https://backend-1-mwne.onrender.com";
-// const BASE_URL = "http://localhost:3001";
+// const BASE_URL = "http://localhost:8080";
 
 export const globalFetcher = async (path, options = {}) => {
   const url = path.startsWith("http") ? path : `${BASE_URL}${path}`;
   const isFormData = options.body instanceof FormData;
   const headers = {
-    ...options.header,
+    ...(options.headers || {}),
   };
-  if (!isFormData) {
+  if (!isFormData && !headers["Content-Type"]) {
     headers["Content-Type"] = "application/json";
   }
 
@@ -26,4 +26,19 @@ export const globalFetcher = async (path, options = {}) => {
   }
 
   return data;
+};
+
+export const authFetcher = async (path, options = {}) => {
+  const token =
+    typeof window !== "undefined"
+      ? localStorage.getItem("kenics_admin_token")
+      : null;
+
+  return globalFetcher(path, {
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
 };

@@ -3,10 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRegister } from "../../functions/registration";
+import { formatNaira, useActiveContest } from "../../functions/contest";
 import { Toaster, toast } from "sonner";
 
 const RegisterPage = () => {
   const { trigger, isMutating } = useRegister();
+  const { data: activeContest, isLoading: contestLoading } = useActiveContest();
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -16,7 +18,7 @@ const RegisterPage = () => {
     dateOfBirth: "",
     height: "",
     weight: "",
-    category: "",
+    categoryId: "",
     bio: "",
     experience: "",
     achievements: "",
@@ -111,7 +113,9 @@ const RegisterPage = () => {
     // Physical Attributes
     if (!formData.height) newErrors.height = "Height is required";
     if (!formData.weight) newErrors.weight = "Weight is required";
-    if (!formData.category) newErrors.category = "Category is required";
+    if (!formData.categoryId) newErrors.categoryId = "Category is required";
+    if (!activeContest)
+      newErrors.categoryId = "No active contest available right now";
 
     // Bio and Experience
     if (!formData.bio.trim()) newErrors.bio = "Bio is required";
@@ -561,36 +565,45 @@ const RegisterPage = () => {
 
               <div className="sm:col-span-3">
                 <label
-                  htmlFor="category"
+                  htmlFor="categoryId"
                   className="block text-sm font-semibold text-gray-700 mb-2"
                 >
                   Category <span className="text-red-500">*</span>
                 </label>
+                {activeContest && (
+                  <p className="text-xs text-pink-600 mb-2">
+                    Registering for: {activeContest.name}
+                  </p>
+                )}
                 <div className="mt-1 relative">
                   <select
-                    id="category"
-                    name="category"
-                    value={formData.category}
+                    id="categoryId"
+                    name="categoryId"
+                    value={formData.categoryId}
                     onChange={handleChange}
+                    disabled={contestLoading || !activeContest}
                     className={`block w-full px-4 py-3 text-sm border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent appearance-none bg-white ${
-                      errors.category
+                      errors.categoryId
                         ? "border-red-500 bg-red-50 focus:ring-red-500"
                         : "border-gray-300 hover:border-gray-400"
                     }`}
                   >
-                    <option value="">Select a category</option>
-                    <option value="baby">
-                      Baby Kenics (0-12 years)(₦10,000)
+                    <option value="">
+                      {contestLoading
+                        ? "Loading categories..."
+                        : !activeContest
+                          ? "No active contest"
+                          : "Select a category"}
                     </option>
-                    <option value="miss">
-                      Miss Kenics (18-25 years)(₦40,000)
-                    </option>
-                    <option value="teen">
-                      Teen Kenics (13-17 years)(₦20,000)
-                    </option>
-                    <option value="mrs">
-                      Mrs. Kenics (Married women)(₦50,000)
-                    </option>
+                    {(activeContest?.categories || []).map((category) => (
+                      <option key={category._id} value={category._id}>
+                        {category.name}
+                        {category.description
+                          ? ` (${category.description})`
+                          : ""}{" "}
+                        — {formatNaira(category.price)}
+                      </option>
+                    ))}
                   </select>
                   <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
                     <svg
@@ -607,7 +620,7 @@ const RegisterPage = () => {
                       />
                     </svg>
                   </div>
-                  {errors.category && (
+                  {errors.categoryId && (
                     <p className="mt-2 text-sm text-red-600 flex items-center">
                       <svg
                         className="w-4 h-4 mr-1"
@@ -620,7 +633,7 @@ const RegisterPage = () => {
                           clipRule="evenodd"
                         />
                       </svg>
-                      {errors.category}
+                      {errors.categoryId}
                     </p>
                   )}
                 </div>
