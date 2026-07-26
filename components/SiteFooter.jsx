@@ -25,6 +25,11 @@ export default function SiteFooter() {
                 </Link>
               </li>
               <li>
+                <Link href="/gallery" className="text-gray-400 hover:text-white">
+                  Gallery
+                </Link>
+              </li>
+              <li>
                 <Link href="/winners" className="text-gray-400 hover:text-white">
                   Winners
                 </Link>

@@ -129,6 +129,12 @@ const Home = () => {
                 Voting
               </Link>
               <Link
+                href="/gallery"
+                className="text-gray-200 hover:text-pink-600 font-medium"
+              >
+                Gallery
+              </Link>
+              <Link
                 href="/winners"
                 className="text-gray-200 hover:text-pink-600 font-medium"
               >
@@ -204,6 +210,12 @@ const Home = () => {
                   className="text-gray-200 hover:text-pink-600 font-medium"
                 >
                   Voting
+                </Link>
+                <Link
+                  href="/gallery"
+                  className="text-gray-200 hover:text-pink-600 font-medium"
+                >
+                  Gallery
                 </Link>
                 <Link
                   href="/winners"

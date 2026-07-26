@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   CalendarDays,
+  Images,
   LayoutDashboard,
   LogOut,
   Mail,
@@ -23,6 +24,7 @@ const navItems = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/contests", label: "Contests", icon: Trophy },
   { href: "/admin/registrations", label: "Registrations", icon: Users },
+  { href: "/admin/gallery", label: "Gallery", icon: Images },
   { href: "/admin/contact", label: "Contact Us", icon: Mail },
 ];
 

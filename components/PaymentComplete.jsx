@@ -5,55 +5,70 @@ import { useSearchParams } from "next/navigation";
 import { CheckCircle2, XCircle, ArrowLeft, Home, Phone } from "lucide-react";
 import Link from "next/link";
 
+function isPaidRedirectStatus(status) {
+  return ["successful", "success", "completed"].includes(
+    String(status || "")
+      .trim()
+      .toLowerCase(),
+  );
+}
+
+function isFailedRedirectStatus(status) {
+  return ["failed", "cancelled", "canceled", "error"].includes(
+    String(status || "")
+      .trim()
+      .toLowerCase(),
+  );
+}
+
 export default function PaymentComplete() {
   const searchParams = useSearchParams();
   const [status, setStatus] = useState("loading");
   const [transaction, setTransaction] = useState(null);
+  const [isVotePayment, setIsVotePayment] = useState(false);
 
   useEffect(() => {
-    // Simulate API call to verify payment status
-    const verifyPayment = async () => {
-      try {
-        // In a real app, you would verify the payment with your backend
-        // const response = await fetch(`/api/verify-payment?${searchParams.toString()}`);
-        // const data = await response.json();
+    const txRef =
+      searchParams.get("tx_ref") ||
+      searchParams.get("txRef") ||
+      searchParams.get("reference") ||
+      "";
+    const redirectStatus = searchParams.get("status") || "";
+    const votePayment = String(txRef).startsWith("vote_");
 
-        // For demo purposes, we'll simulate a response
-        setTimeout(() => {
-          const isSuccess =
-            searchParams.get("status") === "successful" || Math.random() > 0.3;
+    setIsVotePayment(votePayment);
+    setTransaction({
+      id: txRef || "—",
+      amount: searchParams.get("amount") || null,
+      date: new Date().toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      type: votePayment ? "Vote payment" : "Registration payment",
+    });
 
-          setTransaction({
-            id:
-              searchParams.get("tx_ref") ||
-              `TXN-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
-            amount: searchParams.get("amount") || "2,000.00",
-            date: new Date().toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-            name: searchParams.get("name") || "Contestant Registration",
-          });
-
-          setStatus(isSuccess ? "success" : "failed");
-        }, 1500);
-      } catch (error) {
-        console.error("Error verifying payment:", error);
-        setStatus("error");
+    // Give Flutterwave webhook a moment, then show UI from redirect status.
+    const timer = setTimeout(() => {
+      if (isPaidRedirectStatus(redirectStatus) || (!redirectStatus && txRef)) {
+        setStatus("success");
+      } else if (isFailedRedirectStatus(redirectStatus)) {
+        setStatus("failed");
+      } else {
+        setStatus("success");
       }
-    };
+    }, 1200);
 
-    verifyPayment();
+    return () => clearTimeout(timer);
   }, [searchParams]);
 
   const renderContent = () => {
     if (status === "loading") {
       return (
         <div className="text-center py-20">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-pink-600 mx-auto mb-4"></div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
             Verifying Your Payment
           </h2>
@@ -74,8 +89,9 @@ export default function PaymentComplete() {
             Payment Successful!
           </h1>
           <p className="text-gray-600 mb-8">
-            Thank you for your payment. Your registration is now complete and
-            you&apos;re officially in the competition!
+            {isVotePayment
+              ? "Thank you for voting! Your votes have been received and will appear on the leaderboard shortly."
+              : "Thank you for your payment. Your registration is now complete and you're officially in the competition!"}
           </p>
 
           <div className="bg-white rounded-xl shadow-md p-6 mb-8 text-left">
@@ -83,14 +99,22 @@ export default function PaymentComplete() {
               Transaction Details
             </h3>
             <div className="space-y-3">
-              <div className="flex justify-between">
+              <div className="flex justify-between gap-4">
+                <span className="text-gray-500">Type</span>
+                <span className="font-medium">{transaction?.type}</span>
+              </div>
+              <div className="flex justify-between gap-4">
                 <span className="text-gray-500">Transaction ID</span>
-                <span className="font-medium">{transaction?.id}</span>
+                <span className="font-medium break-all text-right">
+                  {transaction?.id}
+                </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Amount Paid</span>
-                <span className="font-medium">₦{transaction?.amount}</span>
-              </div>
+              {transaction?.amount && (
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Amount Paid</span>
+                  <span className="font-medium">₦{transaction.amount}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span className="text-gray-500">Date & Time</span>
                 <span className="font-medium">{transaction?.date}</span>
@@ -113,10 +137,10 @@ export default function PaymentComplete() {
               Back to Home
             </Link>
             <Link
-              href="/models"
+              href={isVotePayment ? "/voting" : "/models"}
               className="px-6 py-3 border border-pink-200 text-pink-600 font-medium rounded-lg hover:bg-pink-50 transition-colors text-center flex items-center justify-center gap-2"
             >
-              View Contestants
+              {isVotePayment ? "View Leaderboard" : "View Contestants"}
             </Link>
           </div>
         </div>
@@ -132,8 +156,9 @@ export default function PaymentComplete() {
           Payment Failed
         </h1>
         <p className="text-gray-600 mb-8">
-          We couldn&apos;t process your payment. Please check your payment
-          details and try again.
+          {isVotePayment
+            ? "We couldn't process your vote payment. Please try again."
+            : "We couldn't process your payment. Please check your payment details and try again."}
         </p>
 
         <div className="bg-white rounded-xl shadow-md p-6 mb-8 text-left">
@@ -147,10 +172,12 @@ export default function PaymentComplete() {
                 Failed
               </span>
             </div>
-            {transaction?.id && (
-              <div className="flex justify-between">
+            {transaction?.id && transaction.id !== "—" && (
+              <div className="flex justify-between gap-4">
                 <span className="text-gray-500">Reference</span>
-                <span className="font-mono text-sm">{transaction.id}</span>
+                <span className="font-mono text-sm break-all text-right">
+                  {transaction.id}
+                </span>
               </div>
             )}
           </div>
@@ -158,6 +185,7 @@ export default function PaymentComplete() {
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
+            type="button"
             onClick={() => window.history.back()}
             className="px-6 py-3 border border-pink-200 text-pink-700 font-medium rounded-lg hover:bg-pink-50 transition-colors flex items-center justify-center"
           >
@@ -184,7 +212,9 @@ export default function PaymentComplete() {
             <Link href="/" className="text-2xl font-bold text-pink-600 mb-2">
               KENICS
             </Link>
-            <p className="text-sm text-pink-500">Contest Registration</p>
+            <p className="text-sm text-pink-500">
+              {isVotePayment ? "Vote Payment" : "Contest Registration"}
+            </p>
           </div>
 
           <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-pink-100">
