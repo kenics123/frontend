@@ -313,12 +313,12 @@ const Home = () => {
             <div className="w-20 h-1 bg-pink-600 mx-auto"></div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="flex flex-wrap justify-center gap-8">
             {activeContest?.categories?.length > 0 ? (
               activeContest.categories.map((category) => (
                 <div
                   key={category._id || category.slug || category.name}
-                  className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition duration-300"
+                  className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition duration-300 w-full max-w-sm text-center"
                 >
                   <h3 className="text-xl font-bold text-gray-800 mb-3">
                     {category.name}
@@ -335,7 +335,7 @@ const Home = () => {
                 </div>
               ))
             ) : (
-              <div className="md:col-span-3 bg-white p-8 rounded-xl shadow-lg text-center">
+              <div className="bg-white p-8 rounded-xl shadow-lg text-center w-full max-w-2xl">
                 <h3 className="text-xl font-bold text-gray-800 mb-3">
                   {contestName
                     ? "No categories yet"

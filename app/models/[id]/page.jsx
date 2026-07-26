@@ -665,8 +665,7 @@ export default function ModelDetailPage() {
             <div className="p-6">
               {!votingOpen && (
                 <div className="mb-4 p-3 rounded-lg bg-amber-50 text-amber-800 text-sm">
-                  Voting is closed right now. An admin must start voting before
-                  payments can begin.
+                  Voting is currently closed. Please check back soon.
                 </div>
               )}
 
