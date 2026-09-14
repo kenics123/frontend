@@ -13,13 +13,10 @@ import {
   Facebook,
   Twitter,
   Calendar,
-  Phone,
-  Mail,
   Ruler,
   Weight,
   Award,
   User,
-  Users,
   ChevronLeft,
   ChevronRight,
   X,
@@ -116,12 +113,6 @@ export default function ModelDetailPage() {
     ? typeof model.socialMedia === "string"
       ? JSON.parse(model.socialMedia)
       : model.socialMedia
-    : {};
-
-  const emergencyContact = model?.emergencyContact
-    ? typeof model.emergencyContact === "string"
-      ? JSON.parse(model.emergencyContact)
-      : model.emergencyContact
     : {};
 
   if (isLoading) {
@@ -583,66 +574,6 @@ export default function ModelDetailPage() {
                 Cast Your Vote
               </button>
             </div>
-
-            {/* Contact Information */}
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Mail className="w-5 h-5 text-pink-600" />
-                Contact Information
-              </h3>
-              <div className="space-y-3">
-                {model.email && (
-                  <div className="flex items-center gap-3 text-gray-700">
-                    <Mail className="w-5 h-5 text-gray-400" />
-                    <a
-                      href={`mailto:${model.email}`}
-                      className="hover:text-pink-600 transition-colors break-all"
-                    >
-                      {model.email}
-                    </a>
-                  </div>
-                )}
-                {model.phone && (
-                  <div className="flex items-center gap-3 text-gray-700">
-                    <Phone className="w-5 h-5 text-gray-400" />
-                    <a
-                      href={`tel:${model.phone}`}
-                      className="hover:text-pink-600 transition-colors"
-                    >
-                      {model.phone}
-                    </a>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Emergency Contact */}
-            {emergencyContact.name && (
-              <div className="bg-white rounded-xl shadow-md p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <Users className="w-5 h-5 text-pink-600" />
-                  Emergency Contact
-                </h3>
-                <div className="space-y-2 text-gray-700">
-                  <p>
-                    <span className="font-medium">Name:</span>{" "}
-                    {emergencyContact.name}
-                  </p>
-                  {emergencyContact.relationship && (
-                    <p>
-                      <span className="font-medium">Relationship:</span>{" "}
-                      {emergencyContact.relationship}
-                    </p>
-                  )}
-                  {(emergencyContact.phone || emergencyContact.number) && (
-                    <p>
-                      <span className="font-medium">Phone:</span>{" "}
-                      {emergencyContact.phone || emergencyContact.number}
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
